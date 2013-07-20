@@ -1,6 +1,5 @@
 # bb4-sound
 
-
 Library project for creating sounds, music, and speech synthesis.
 Note: Much of this code came from two sources (though extensive modifications have been made)
   1) MidiSynch by Brian Lichtenwalter. The Sun copyright as been maintained in the relevant files.
