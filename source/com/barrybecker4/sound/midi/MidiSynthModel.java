@@ -13,7 +13,7 @@ import java.io.IOException;
 
 
 /**
- * Model code extracted from MidiSynth by Brian Lichtenwalter.
+ * MidiSynch Model code extracted from MidiSynth by Brian Lichtenwalter.
  *
  * @author Brian Lichtenwalter
  * @author Barry Becker

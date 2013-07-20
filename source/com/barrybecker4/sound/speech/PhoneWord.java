@@ -6,6 +6,7 @@ package com.barrybecker4.sound.speech;
 import java.util.StringTokenizer;
 
 /**
+ * Represents a single phonetic word.
  * See http://www.javaworld.com/javaworld/jw-08-2001/jw-0817-javatalk.html?page=1
  * Represents and "says" a phonetic word.
  */

@@ -2,15 +2,11 @@
 package com.barrybecker4.sound;
 
 import javax.sound.midi.Instrument;
-import javax.sound.midi.MidiChannel;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Soundbank;
-import javax.sound.midi.Synthesizer;
 
 /**
- *  This class provides a convenient way to access the Java Sound API.
- *  You can use it to generate all kinds of musical effects
+ *  A collection of instruments and other sounds that can be made audible using the Java Sound API.
+ *  You can use these instruments to generate all kinds of musical effects.
  *
  *  @author Barry Becker
  */
@@ -48,7 +44,7 @@ public class Instruments {
     public static final String AIRPLANE = "Digi-Dodo";
     public static final String ALARM = "Alarm";
     public static final String BUZZY_HIT = "buzzy hit";
-    public static final String GATE_TONE = "Gate-tone";      // futuristic dorr
+    public static final String GATE_TONE = "Gate-tone";      // futuristic door
     public static final String DUB_KICK = "dub_kick";        // spacy
     public static final String FIFTH_PULSE = "5th Pulse";
     public static final String RICOCHET = "Ricochet Pad";
@@ -65,7 +61,7 @@ public class Instruments {
     public static final String SLO_LASER = "SloLaser";
     public static final String SCRATCH = "itchy-scratch";
     public static final String SCRATCH2 = "itchy-scratch2";
-    public static final String METALLIC_SNARE = "hi_metallic_snare";    // reverb
+    public static final String METALLIC_SNARE = "hi_metallic_snare";    // reverberation
     public static final String CHEM_TONE = "chem-tone";
 
     /** these sound the best in my opinion. */

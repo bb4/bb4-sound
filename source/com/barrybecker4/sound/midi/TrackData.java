@@ -4,7 +4,7 @@ package com.barrybecker4.sound.midi;
 import javax.sound.midi.Track;
 
 /**
- * A track
+ * A track os sound data
  */
 class TrackData {
     Integer chanNum; String name; Track track;

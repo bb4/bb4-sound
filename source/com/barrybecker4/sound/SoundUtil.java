@@ -16,9 +16,9 @@ import java.net.URL;
 public final class SoundUtil {
 
     /**
-     * This converts the file to something that jav can paly.
+     * This converts the file to something that jav can play.
      * wav, aiff, and au files should work, but currently only au seem to.
-     * @param soundPath
+     * @param soundPath path to sound file
      */
     public static void playSoundAndWait(String soundPath) {
         URL clipURL = FileUtil.getURL(soundPath);
@@ -28,7 +28,7 @@ public final class SoundUtil {
     /**
      * This converts the file to something that jav can paly.
      * wav, aiff, and au files should work, but currently only au seem to.
-     * @param soundPath
+     * @param soundPath path to sound file
      */
     public static void playSound(final String soundPath) {
 
@@ -46,7 +46,7 @@ public final class SoundUtil {
      /**
      * This converts the file to something that jav can play.
      * wav, aiff, and au files should work, but currently only au seem to.
-     * @param clipURL
+     * @param clipURL url of audio clip
      */
     public static void playSound(final URL clipURL) {
 
@@ -61,8 +61,8 @@ public final class SoundUtil {
     }
 
     /**
-     * This converts the file to something that jav can paly.
-     * @param clipURL
+     * This converts the file to something that jav can play.
+     * @param clipURL url of audio clip
      */
     private static void playSoundInternal(URL clipURL) {
         try {

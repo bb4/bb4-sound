@@ -4,6 +4,7 @@
 package com.barrybecker4.sound.speech;
 
 /**
+ * Makes the somputer speak using speech synthesis.
  * See http://www.javaworld.com/javaworld/jw-08-2001/jw-0817-javatalk.html?page=1
  *
  * The speech engine works by concatenating short sound samples that represent the smallest

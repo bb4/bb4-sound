@@ -14,6 +14,7 @@ import javax.sound.sampled.SourceDataLine;
 import java.net.URL;
 
 /**
+ * Represents a single phonetic token.
  * See http://www.javaworld.com/javaworld/jw-08-2001/jw-0817-javatalk.html?page=1
 
  * Allophones, are labeled with a one-, two-, or three-letter identifier.

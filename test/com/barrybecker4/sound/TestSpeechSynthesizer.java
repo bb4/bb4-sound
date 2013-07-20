@@ -5,7 +5,6 @@ import com.barrybecker4.sound.speech.SpeechSynthesizer;
 import junit.framework.TestCase;
 
 /**
- *
  * @author Barry Becker
  */
 public class TestSpeechSynthesizer extends TestCase {
