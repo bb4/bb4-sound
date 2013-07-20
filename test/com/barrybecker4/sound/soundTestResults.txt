@@ -1,0 +1,19 @@
+Testsuite: com.barrybecker4.sound.test.SoundTest
+Tests run: 2, Failures: 0, Errors: 0, Time elapsed: 6.058 sec
+------------- Standard Output ---------------
+searching for url path=com/barrybecker4/puzzle/adventure/stories/ludlow/sounds/test.au
+File AudioFormat: ULAW 8000.0 Hz, 8 bit, mono, 1 bytes/frame,
+AudioFormat: PCM_SIGNED 8000.0 Hz, 16 bit, mono, 2 bytes/frame, big-endian
+Frame Rate: 8000
+Frame Size: 2
+Buffer Size: 8000
+thisPhoneFile=com/becker/sound/allophones/y.au
+getSound sPath=com/becker/sound/allophones/y.au
+searching for url path=com/becker/sound/allophones/y.au
+thisPhoneFile=com/becker/sound/allophones/ouu.au
+getSound sPath=com/becker/sound/allophones/ouu.au
+searching for url path=com/becker/sound/allophones/ouu.au
+------------- ---------------- ---------------
+
+Testcase: testWav took 5.411 sec
+Testcase: testSpeech took 0.643 sec
