@@ -13,9 +13,8 @@ dependencies {
    compile 'com.barrybecker4:bb4-common:1.1.2-SNAPSHOT'
 }
 
-
 jar {
-    archiveName = 'bb4-sound-' + version + '.jar'
+    archiveName = "${archivesBaseName}-${version}.jar"
     manifest {
         attributes 'Implementation-Title': 'Sound related code',
             'Implementation-Version': version,
@@ -23,5 +22,7 @@ jar {
             'Main-Class': mainClassName
     }
 }
+
+apply from: 'https://raw.github.com/barrybecker4/bb4-common/master/bb4-publish.gradle'
 
 
