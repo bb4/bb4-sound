@@ -2,20 +2,21 @@
 package com.barrybecker4.sound;
 
 import com.barrybecker4.common.concurrency.ThreadUtil;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  *
  * @author Barry Becker
  */
-public class MusicMakerTest extends TestCase {
+public class MusicMakerTest  {
 
     private static final int DURATION = 5;
+
     /** instance under test. */
     private static final MusicMaker music = new MusicMaker();
 
 
-
+    @Test
     public void testPlayAllInstruments() {
 
         Instruments instruments = music.getInstruments();
@@ -24,6 +25,7 @@ public class MusicMakerTest extends TestCase {
         }
     }
 
+    @Test
     public void testPlayInstrumentsSimultaneously() {
 
         Instruments instruments = music.getInstruments();

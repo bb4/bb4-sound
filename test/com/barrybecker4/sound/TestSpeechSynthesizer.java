@@ -2,12 +2,13 @@
 package com.barrybecker4.sound;
 
 import com.barrybecker4.sound.speech.SpeechSynthesizer;
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Barry Becker
  */
-public class TestSpeechSynthesizer extends TestCase {
+public class TestSpeechSynthesizer {
 
     private static final String ENTER_NUMBER = "p|l|ee|z e|n|t|er aa nn|u|m|b|er .|.";
 
@@ -17,19 +18,22 @@ public class TestSpeechSynthesizer extends TestCase {
     private static final SpeechSynthesizer speech = new SpeechSynthesizer();
 
 
-    @Override
+    @Before
     public void setUp() {}
 
+    @Test
     public void testSayEnterNumber() {
         speech.sayText( ENTER_NUMBER );
     }
 
+    @Test
     public void testSayGreeting() {
         //speech.sayText("w|u|d y|ouu l|ii|k t|ouu p|l|ay aa gg|AY|M .");
         speech.sayPhoneWords( PLAY_GAME );
     }
 
     /** Why can't it say a as in apple?
+    @Test
     public void testSayApple() {
         String text = "a|p|l  1sp AA_|P_|l 10ms AA_|p|L_ 50ms AA_|p|LL";
         speech.sayText(text);
