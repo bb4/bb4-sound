@@ -36,7 +36,18 @@ import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Track;
-import javax.swing.*;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -44,13 +55,19 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -71,7 +88,7 @@ import java.util.Vector;
  * @version @(#)MidiSynth.java	1.15 99/12/03
  * @author Brian Lichtenwalter
  */
-public class MidiSynth extends JPanel {
+public class MidiSynth extends JPanel implements ProgramChangeHandler {
 
     private final static int PROGRAM = 192;
 
@@ -117,7 +134,10 @@ public class MidiSynth extends JPanel {
         pp.add(new Piano());
         p.add(pp);
         p.add(new Controls());
-        p.add(new InstrumentsTable());
+
+        InstrumentsTable itable = new InstrumentsTable(model,this);
+        table = itable.table;
+        p.add(itable);
 
         add(p);
     }
@@ -161,10 +181,30 @@ public class MidiSynth extends JPanel {
         try {
             long millis = System.currentTimeMillis() - startTime;
             long tick = millis * model.getResolution() / 500;
-            message.setMessage(type+cc.num, num, cc.velocity);
+            message.setMessage(type + cc.num, num, cc.velocity);
             MidiEvent event = new MidiEvent(message, tick);
             track.add(event);
         } catch (Exception ex) { ex.printStackTrace(); }
+    }
+
+    public void newRow(int row) {
+       cc.row = row;
+       programChange(cc.col * InstrumentsTable.NUM_ROWS + cc.row);
+    }
+
+    public void newColumn(int column) {
+        cc.col = column;
+        programChange(cc.col * InstrumentsTable.NUM_ROWS + cc.row);
+    }
+
+    public void programChange(int program) {
+        if (model.hasInstruments()) {
+            model.loadInstrument(program);
+        }
+        cc.channel.programChange(program);
+        if (record) {
+            createShortEvent(PROGRAM, program);
+        }
     }
 
     /**
@@ -206,7 +246,7 @@ public class MidiSynth extends JPanel {
      */
     class Piano extends JPanel implements MouseListener {
 
-        List<Key> blackKeys = new Vector<Key>();
+        List<Key> blackKeys = new Vector<>();
         Key prevKey;
         final int kw = 16, kh = 80;
 
@@ -318,103 +358,6 @@ public class MidiSynth extends JPanel {
                     prevKey = key;
                     repaint();
                 }
-            }
-        }
-    }
-
-
-    /**
-     * Table for 128 general MIDI melody instruments.
-     */
-    class InstrumentsTable extends JPanel {
-
-        private String names[] = {
-                "Piano", "Chromatic Perc.", "Organ", "Guitar",
-                "Bass", "Strings", "Ensemble", "Brass",
-                "Reed", "Pipe", "Synth Lead", "Synth Pad",
-                "Synth Effects", "Ethnic", "Percussive", "Sound Effects" };
-        private int nRows = 8;
-        private int nCols = names.length; // just show 128 instruments
-
-        InstrumentsTable() {
-            setLayout(new BorderLayout());
-
-            TableModel dataModel = new AbstractTableModel() {
-                public int getColumnCount() { return nCols; }
-                public int getRowCount() { return nRows;}
-                public Object getValueAt(int r, int c) {
-                    if (model.hasInstruments()) {
-                        return model.getInstrument(c*nRows+r).getName();
-                    } else {
-                        return Integer.toString(c*nRows+r);
-                    }
-                }
-                public String getColumnName(int c) {
-                    return names[c];
-                }
-                public Class getColumnClass(int c) {
-                    return getValueAt(0, c).getClass();
-                }
-                public boolean isCellEditable(int r, int c) {return false;}
-                public void setValueAt(Object obj, int r, int c) {}
-            };
-
-            table = new JTable(dataModel);
-            table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-            // Listener for row changes
-            ListSelectionModel lsm = table.getSelectionModel();
-            lsm.addListSelectionListener(new ListSelectionListener() {
-                public void valueChanged(ListSelectionEvent e) {
-                    ListSelectionModel sm = (ListSelectionModel) e.getSource();
-                    if (!sm.isSelectionEmpty()) {
-                        cc.row = sm.getMinSelectionIndex();
-                    }
-                    programChange(cc.col*nRows+cc.row);
-                }
-            });
-
-            // Listener for column changes
-            lsm = table.getColumnModel().getSelectionModel();
-            lsm.addListSelectionListener(new ListSelectionListener() {
-                public void valueChanged(ListSelectionEvent e) {
-                    ListSelectionModel sm = (ListSelectionModel) e.getSource();
-                    if (!sm.isSelectionEmpty()) {
-                        cc.col = sm.getMinSelectionIndex();
-                    }
-                    programChange(cc.col*nRows+cc.row);
-                }
-            });
-
-            table.setPreferredScrollableViewportSize(new Dimension(nCols*110, 200));
-            table.setCellSelectionEnabled(true);
-            table.setColumnSelectionAllowed(true);
-            for (String name : names) {
-                TableColumn column = table.getColumn(name);
-                column.setPreferredWidth(110);
-            }
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-            JScrollPane sp = new JScrollPane(table);
-            sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-            sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-            add(sp);
-        }
-
-        public Dimension getPreferredSize() {
-            return new Dimension(800,170);
-        }
-        public Dimension getMaximumSize() {
-            return new Dimension(800,170);
-        }
-
-        private void programChange(int program) {
-            if (model.hasInstruments()) {
-                model.loadInstrument(program);
-            }
-            cc.channel.programChange(program);
-            if (record) {
-                createShortEvent(PROGRAM, program);
             }
         }
     }
@@ -589,7 +532,7 @@ public class MidiSynth extends JPanel {
     class RecordFrame extends JFrame implements ActionListener, MetaEventListener {
 
         JButton recordB, playB, saveB;
-        List<TrackData> tracks = new Vector<TrackData>();
+        List<TrackData> tracks = new Vector<>();
         TableModel dataModel;
         JTable table;
 
@@ -679,7 +622,7 @@ public class MidiSynth extends JPanel {
 
                     // add a program change right at the beginning of
                     // the track for the current instrument
-                    createShortEvent(PROGRAM,cc.col*8+cc.row);
+                    createShortEvent(PROGRAM,cc.col * InstrumentsTable.NUM_ROWS + cc.row);
 
                     recordB.setText("Stop");
                     playB.setEnabled(false);
@@ -687,9 +630,9 @@ public class MidiSynth extends JPanel {
                 } else {
                     String name;
                     if (model.hasInstruments()) {
-                        name = model.getInstrument(cc.col*8+cc.row).getName();
+                        name = model.getInstrument(cc.col * InstrumentsTable.NUM_ROWS + cc.row).getName();
                     } else {
-                        name = Integer.toString(cc.col*8+cc.row);
+                        name = Integer.toString(cc.col * InstrumentsTable.NUM_ROWS + cc.row);
                     }
                     tracks.add(new TrackData(cc.num+1, name, track));
                     table.tableChanged(new TableModelEvent(dataModel));

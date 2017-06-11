@@ -16,6 +16,6 @@ class ChannelData {
     ChannelData(MidiChannel channel, int num) {
         this.channel = channel;
         this.num = num;
-        velocity = pressure = bend = reverb = 64;
+        this.velocity = this.pressure = this.bend = this.reverb = 64;
     }
 }
