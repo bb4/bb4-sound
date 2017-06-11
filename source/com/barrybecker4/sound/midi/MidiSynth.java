@@ -74,11 +74,15 @@ import java.util.Vector;
 public class MidiSynth extends JPanel {
 
     private final static int PROGRAM = 192;
-    private final static  int NOTEON = 144;
-    private final static int NOTEOFF = 128;
+
     private final static int SUSTAIN = 64;
     private final static int REVERB = 91;
-    private final static int ON = 0, OFF = 1;
+
+    private final static  int NOTEON = 144;
+    private final static int NOTEOFF = 128;
+    private final static int ON = 0;
+    private final static int OFF = 1;
+
     private final Color jfcBlue = new Color(204, 204, 255);
     private final Color pink = new Color(255, 175, 175);
     private MidiSynthModel model;
@@ -110,16 +114,13 @@ public class MidiSynth extends JPanel {
         p.setBorder(new CompoundBorder(cb,eb));
         JPanel pp = new JPanel(new BorderLayout());
         pp.setBorder(new EmptyBorder(10,20,10,5));
-        Piano piano;
-        pp.add(piano = new Piano());
+        pp.add(new Piano());
         p.add(pp);
-        Controls controls;
-        p.add(controls = new Controls());
+        p.add(new Controls());
         p.add(new InstrumentsTable());
 
         add(p);
     }
-
 
     public void open() {
         model.open();
@@ -136,7 +137,6 @@ public class MidiSynth extends JPanel {
         lsm = table.getColumnModel().getSelectionModel();
         lsm.setSelectionInterval(0,0);
     }
-
 
     public void close() {
         model.close();
@@ -318,43 +318,6 @@ public class MidiSynth extends JPanel {
                     prevKey = key;
                     repaint();
                 }
-            }
-        }
-    }
-
-
-    /**
-     * Stores MidiChannel information.
-     */
-    class ChannelData {
-
-        MidiChannel channel;
-        boolean solo, mono, mute, sustain;
-        int velocity, pressure, bend, reverb;
-        int row, col, num;
-
-        ChannelData(MidiChannel channel, int num) {
-            this.channel = channel;
-            this.num = num;
-            velocity = pressure = bend = reverb = 64;
-        }
-
-        void setComponentStates() {
-            table.setRowSelectionInterval(row, row);
-            table.setColumnSelectionInterval(col, col);
-
-            soloCB.setSelected(solo);
-            monoCB.setSelected(mono);
-            muteCB.setSelected(mute);
-            //sustCB.setSelected(sustain);
-
-            JSlider slider[] = { veloS, presS, bendS, revbS };
-            int v[] = { velocity, pressure, bend, reverb };
-            for (int i = 0; i < slider.length; i++) {
-                TitledBorder tb = (TitledBorder) slider[i].getBorder();
-                String s = tb.getTitle();
-                tb.setTitle(s.substring(0, s.indexOf('=')+1) + String.valueOf(v[i]));
-                slider[i].repaint();
             }
         }
     }
@@ -565,7 +528,7 @@ public class MidiSynth extends JPanel {
             if (e.getSource() instanceof JComboBox) {
                 JComboBox combo = (JComboBox) e.getSource();
                 cc = channels[combo.getSelectedIndex()];
-                cc.setComponentStates();
+                setComponentStates(cc);
             } else {
                 JCheckBox cb = (JCheckBox) e.getSource();
                 String name = cb.getText();
@@ -579,6 +542,25 @@ public class MidiSynth extends JPanel {
                     cc.sustain = cb.isSelected();
                     cc.channel.controlChange(SUSTAIN, cc.sustain ? 127 : 0);
                 }
+            }
+        }
+
+        private void setComponentStates(ChannelData cc) {
+            table.setRowSelectionInterval(cc.row, cc.row);
+            table.setColumnSelectionInterval(cc.col, cc.col);
+
+            soloCB.setSelected(cc.solo);
+            monoCB.setSelected(cc.mono);
+            muteCB.setSelected(cc.mute);
+            //sustCB.setSelected(sustain);
+
+            JSlider slider[] = { veloS, presS, bendS, revbS };
+            int v[] = { cc.velocity, cc.pressure, cc.bend, cc.reverb };
+            for (int i = 0; i < slider.length; i++) {
+                TitledBorder tb = (TitledBorder) slider[i].getBorder();
+                String s = tb.getTitle();
+                tb.setTitle(s.substring(0, s.indexOf('=')+1) + String.valueOf(v[i]));
+                slider[i].repaint();
             }
         }
 
