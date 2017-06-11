@@ -6,4 +6,4 @@ classes/
 build/
 bin/
 *.iml
-*.class
+*.ipr

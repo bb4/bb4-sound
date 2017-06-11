@@ -7,8 +7,11 @@ import javax.sound.midi.Track;
  * A track os sound data
  */
 class TrackData {
-    Integer chanNum; String name; Track track;
-    public TrackData(int chanNum, String name, Track track) {
+
+    Integer chanNum; String name;
+    Track track;
+
+    TrackData(int chanNum, String name, Track track) {
         this.chanNum = chanNum;
         this.name = name;
         this.track = track;

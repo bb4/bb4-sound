@@ -20,10 +20,10 @@ import java.io.IOException;
  */
 public class MidiSynthModel  {
 
-    Sequencer sequencer;
-    Sequence sequence;
-    Synthesizer synthesizer;
-    Instrument instruments[];
+    private Sequencer sequencer;
+    private Sequence sequence;
+    private Synthesizer synthesizer;
+    private Instrument instruments[];
 
 
     public MidiSynthModel() {}

@@ -73,29 +73,29 @@ import java.util.Vector;
  */
 public class MidiSynth extends JPanel {
 
-    final static int PROGRAM = 192;
-    final static  int NOTEON = 144;
-    final static int NOTEOFF = 128;
-    final static int SUSTAIN = 64;
-    final static int REVERB = 91;
-    final static int ON = 0, OFF = 1;
-    final Color jfcBlue = new Color(204, 204, 255);
-    final Color pink = new Color(255, 175, 175);
-    MidiSynthModel model;
-    ChannelData channels[];
-    ChannelData cc;    // current channel
-    JCheckBox mouseOverCB = new JCheckBox("mouseOver", true);
-    JSlider veloS, presS, bendS, revbS;
-    JCheckBox soloCB, monoCB, muteCB, sustCB;
-    List<Key> keys = new Vector<Key>();
-    List<Key> whiteKeys = new Vector<Key>();
-    JTable table;
-    Piano piano;
-    boolean record;
-    Track track;
-    long startTime;
-    RecordFrame recordFrame;
-    Controls controls;
+    private final static int PROGRAM = 192;
+    private final static  int NOTEON = 144;
+    private final static int NOTEOFF = 128;
+    private final static int SUSTAIN = 64;
+    private final static int REVERB = 91;
+    private final static int ON = 0, OFF = 1;
+    private final Color jfcBlue = new Color(204, 204, 255);
+    private final Color pink = new Color(255, 175, 175);
+    private MidiSynthModel model;
+    private ChannelData channels[];
+    private ChannelData cc;    // current channel
+
+    private JCheckBox mouseOverCB = new JCheckBox("mouseOver", true);
+    private JSlider veloS, presS, bendS, revbS;
+    private JCheckBox soloCB, monoCB, muteCB, sustCB;
+    private List<Key> keys = new Vector<Key>();
+    private List<Key> whiteKeys = new Vector<Key>();
+    private JTable table;
+
+    private boolean record;
+    private Track track;
+    private long startTime;
+    private RecordFrame recordFrame;
 
 
     public MidiSynth() {
@@ -110,8 +110,10 @@ public class MidiSynth extends JPanel {
         p.setBorder(new CompoundBorder(cb,eb));
         JPanel pp = new JPanel(new BorderLayout());
         pp.setBorder(new EmptyBorder(10,20,10,5));
+        Piano piano;
         pp.add(piano = new Piano());
         p.add(pp);
+        Controls controls;
         p.add(controls = new Controls());
         p.add(new InstrumentsTable());
 
@@ -154,7 +156,7 @@ public class MidiSynth extends JPanel {
      *      (resolution / 500) ticks per millisecond
      *   ticks = milliseconds * resolution / 500
      */
-    public void createShortEvent(int type, int num) {
+    private void createShortEvent(int type, int num) {
         ShortMessage message = new ShortMessage();
         try {
             long millis = System.currentTimeMillis() - startTime;
@@ -171,28 +173,28 @@ public class MidiSynth extends JPanel {
     class Key extends Rectangle {
         int noteState = OFF;
         int kNum;
-        public Key(int x, int y, int width, int height, int num) {
+        Key(int x, int y, int width, int height, int num) {
             super(x, y, width, height);
             kNum = num;
         }
-        public boolean isNoteOn() {
+        boolean isNoteOn() {
             return noteState == ON;
         }
-        public void on() {
+        void on() {
             setNoteState(ON);
             cc.channel.noteOn(kNum, cc.velocity);
             if (record) {
                 createShortEvent(NOTEON, kNum);
             }
         }
-        public void off() {
+        void off() {
             setNoteState(OFF);
             cc.channel.noteOff(kNum, cc.velocity);
             if (record) {
                 createShortEvent(NOTEOFF, kNum);
             }
         }
-        public void setNoteState(int state) {
+        void setNoteState(int state) {
             noteState = state;
         }
     }
@@ -209,7 +211,7 @@ public class MidiSynth extends JPanel {
         final int kw = 16, kh = 80;
 
 
-        public Piano() {
+        Piano() {
             setLayout(new BorderLayout());
             setPreferredSize(new Dimension(42*kw, kh+1));
             int transpose = 24;
@@ -261,7 +263,7 @@ public class MidiSynth extends JPanel {
         public void mouseEntered(MouseEvent e) { }
 
 
-        public Key getKey(Point point) {
+        Key getKey(Point point) {
             for (Key key : keys) {
                 if (key.contains(point)) {
                     return key;
@@ -331,13 +333,13 @@ public class MidiSynth extends JPanel {
         int velocity, pressure, bend, reverb;
         int row, col, num;
 
-        public ChannelData(MidiChannel channel, int num) {
+        ChannelData(MidiChannel channel, int num) {
             this.channel = channel;
             this.num = num;
             velocity = pressure = bend = reverb = 64;
         }
 
-        public void setComponentStates() {
+        void setComponentStates() {
             table.setRowSelectionInterval(row, row);
             table.setColumnSelectionInterval(col, col);
 
@@ -351,7 +353,7 @@ public class MidiSynth extends JPanel {
             for (int i = 0; i < slider.length; i++) {
                 TitledBorder tb = (TitledBorder) slider[i].getBorder();
                 String s = tb.getTitle();
-                tb.setTitle(s.substring(0, s.indexOf('=')+1)+s.valueOf(v[i]));
+                tb.setTitle(s.substring(0, s.indexOf('=')+1) + String.valueOf(v[i]));
                 slider[i].repaint();
             }
         }
@@ -364,14 +366,14 @@ public class MidiSynth extends JPanel {
     class InstrumentsTable extends JPanel {
 
         private String names[] = {
-           "Piano", "Chromatic Perc.", "Organ", "Guitar",
-           "Bass", "Strings", "Ensemble", "Brass",
-           "Reed", "Pipe", "Synth Lead", "Synth Pad",
-           "Synth Effects", "Ethnic", "Percussive", "Sound Effects" };
+                "Piano", "Chromatic Perc.", "Organ", "Guitar",
+                "Bass", "Strings", "Ensemble", "Brass",
+                "Reed", "Pipe", "Synth Lead", "Synth Pad",
+                "Synth Effects", "Ethnic", "Percussive", "Sound Effects" };
         private int nRows = 8;
         private int nCols = names.length; // just show 128 instruments
 
-        public InstrumentsTable() {
+        InstrumentsTable() {
             setLayout(new BorderLayout());
 
             TableModel dataModel = new AbstractTableModel() {
@@ -424,15 +426,15 @@ public class MidiSynth extends JPanel {
             table.setPreferredScrollableViewportSize(new Dimension(nCols*110, 200));
             table.setCellSelectionEnabled(true);
             table.setColumnSelectionAllowed(true);
-            for (int i = 0; i < names.length; i++) {
-                TableColumn column = table.getColumn(names[i]);
+            for (String name : names) {
+                TableColumn column = table.getColumn(name);
                 column.setPreferredWidth(110);
             }
-            table.setAutoResizeMode(table.AUTO_RESIZE_OFF);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
             JScrollPane sp = new JScrollPane(table);
-            sp.setVerticalScrollBarPolicy(sp.VERTICAL_SCROLLBAR_NEVER);
-            sp.setHorizontalScrollBarPolicy(sp.HORIZONTAL_SCROLLBAR_ALWAYS);
+            sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+            sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
             add(sp);
         }
 
@@ -459,11 +461,9 @@ public class MidiSynth extends JPanel {
      */
     class Controls extends JPanel implements ActionListener, ChangeListener, ItemListener {
 
-        public JButton recordB;
-        JMenu menu;
-        int fileNum = 0;
+        JButton recordB;
 
-        public Controls() {
+        Controls() {
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             setBorder(new EmptyBorder(5,10,5,10));
 
@@ -507,7 +507,7 @@ public class MidiSynth extends JPanel {
             add(p);
         }
 
-        public JButton createButton(String name, JPanel p) {
+        JButton createButton(String name, JPanel p) {
             JButton b = new JButton(name);
             b.addActionListener(this);
             p.add(b);
@@ -548,7 +548,7 @@ public class MidiSynth extends JPanel {
             int value = slider.getValue();
             TitledBorder tb = (TitledBorder) slider.getBorder();
             String s = tb.getTitle();
-            tb.setTitle(s.substring(0, s.indexOf('=')+1) + s.valueOf(value));
+            tb.setTitle(s.substring(0, s.indexOf('=')+1) + String.valueOf(value));
             if (s.startsWith("Velocity")) {
                 cc.velocity = value;
             } else if (s.startsWith("Pressure")) {
@@ -606,12 +606,12 @@ public class MidiSynth extends JPanel {
      */
     class RecordFrame extends JFrame implements ActionListener, MetaEventListener {
 
-        public JButton recordB, playB, saveB;
+        JButton recordB, playB, saveB;
         List<TrackData> tracks = new Vector<TrackData>();
         TableModel dataModel;
         JTable table;
 
-        public RecordFrame() {
+        RecordFrame() {
             super("Midi Capture");
             addWindowListener(new WindowAdapter() {
                 public void windowClosing(WindowEvent e) {recordFrame = null;}
@@ -678,7 +678,7 @@ public class MidiSynth extends JPanel {
         }
 
 
-        public JButton createButton(String name, JPanel p, boolean state) {
+        JButton createButton(String name, JPanel p, boolean state) {
             JButton b = new JButton(name);
             b.setFont(new Font("Verdana", Font.PLAIN, 10));
             b.setEnabled(state);
@@ -686,7 +686,6 @@ public class MidiSynth extends JPanel {
             p.add(b);
             return b;
         }
-
 
         public void actionPerformed(ActionEvent e) {
             JButton button = (JButton) e.getSource();
@@ -737,10 +736,7 @@ public class MidiSynth extends JPanel {
                     JFileChooser fc = new JFileChooser(file);
                     fc.setFileFilter(new javax.swing.filechooser.FileFilter() {
                         public boolean accept(File f) {
-                            if (f.isDirectory()) {
-                                return true;
-                            }
-                            return false;
+                            return f.isDirectory();
                         }
                         public String getDescription() {
                             return "Save as .mid file.";
@@ -750,8 +746,6 @@ public class MidiSynth extends JPanel {
                         saveMidiFile(fc.getSelectedFile());
                     }
                 } catch (SecurityException ex) {
-                    ex.printStackTrace();
-                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
@@ -764,7 +758,7 @@ public class MidiSynth extends JPanel {
             }
         }
 
-        public void saveMidiFile(File file) {
+        void saveMidiFile(File file) {
             try {
                 int[] fileTypes = MidiSystem.getMidiFileTypes(model.getSequence());
                 if (fileTypes.length == 0) {

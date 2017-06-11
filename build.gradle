@@ -1,5 +1,4 @@
-/* Copyright by Barry G. Becker, 2013. Licensed under MIT License: http://www.opensource.org/licenses/MIT */
-
+// Copyright by Barry G. Becker, 2013 - 2017. Licensed under MIT License: http://www.opensource.org/licenses/MIT
 group = 'com.barrybecker4'
 version = '1.4-SNAPSHOT'
 
@@ -18,7 +17,7 @@ jar {
     manifest {
         attributes 'Implementation-Title': 'Sound related code',
             'Implementation-Version': version,
-            provider: 'gradle',
+            'provider': 'gradle',
             'Main-Class': mainClassName
     }
 }
