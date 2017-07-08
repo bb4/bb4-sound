@@ -26,32 +26,32 @@ public class MidiSynthModel  {
     private Instrument instruments[];
 
 
-    public MidiSynthModel() {}
+    MidiSynthModel() {}
 
-    public MidiChannel[] getMidiChannels() {
+    MidiChannel[] getMidiChannels() {
         return synthesizer.getChannels();
     }
 
-    public int getResolution() {
+    int getResolution() {
         return sequence.getResolution();
     }
 
-    public boolean hasInstruments()  {
+    boolean hasInstruments()  {
         return instruments != null;
     }
-    public Instrument getInstrument(int i) {
+    Instrument getInstrument(int i) {
         return instruments[i];
     }
 
-    public void loadInstrument(int program) {
+    void loadInstrument(int program) {
         synthesizer.loadInstrument(getInstrument(program));
     }
 
-    public Sequencer getSequencer() {
+    Sequencer getSequencer() {
         return sequencer;
     }
 
-    public Sequence getSequence() {
+    Sequence getSequence() {
         return sequence;
     }
 
@@ -70,7 +70,7 @@ public class MidiSynthModel  {
         }
     }
 
-    public void addSequence(MetaEventListener listener) {
+    void addSequence(MetaEventListener listener) {
         sequencer.addMetaEventListener(listener);
         try {
             sequence = new Sequence(Sequence.PPQ, 10);
@@ -78,7 +78,7 @@ public class MidiSynthModel  {
     }
 
 
-    public void open() {
+    void open() {
         try {
             if (synthesizer == null) {
                 if ((synthesizer = MidiSystem.getSynthesizer()) == null) {
@@ -99,7 +99,7 @@ public class MidiSynthModel  {
     }
 
 
-    public void close() {
+    void close() {
         if (synthesizer != null) {
             synthesizer.close();
         }
@@ -110,5 +110,4 @@ public class MidiSynthModel  {
         synthesizer = null;
         instruments = null;
     }
-
 }

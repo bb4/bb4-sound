@@ -36,7 +36,6 @@ class PhoneToken {
     /** delay in millis between words. */
     private static final int DELAY_BETWEEN_WORDS = 200;
 
-
     private String phoneToken;
     private SourceDataLine line = null;
 

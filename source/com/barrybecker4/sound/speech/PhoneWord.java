@@ -34,14 +34,12 @@ class PhoneWord {
         //System.out.println("about to say: "+ word);
         PhoneToken token = null;
         while ( st.hasMoreTokens() ) {
-
             token = new PhoneToken(st.nextToken());
             previousSound = token.process(previousSound);
         }
 
         // -- play the final sound and drain the sound channel --
-        if (token != null)
-        {
+        if (token != null)  {
             token.playSound( previousSound );
             token.drain();
         }

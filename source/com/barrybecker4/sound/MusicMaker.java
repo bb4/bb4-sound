@@ -7,8 +7,8 @@ import javax.sound.midi.Soundbank;
 import javax.sound.midi.Synthesizer;
 
 /**
- *  This class provides a convenient way to access the Java Sound API.
- *  You can use it to generate all kinds of musical effects
+ *  This class provides a facade to the Java Sound API.
+ *  You can use it to generate all kinds of musical effects.
  *
  *  @author Barry Becker
  */
@@ -25,7 +25,7 @@ public class MusicMaker {
         initSynthesizer();
     }
 
-    protected void initSynthesizer() {
+    private void initSynthesizer() {
         try {
             if (synthesizer_ == null) {
                 if ((synthesizer_ = MidiSystem.getSynthesizer()) == null) {
