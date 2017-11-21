@@ -22,6 +22,10 @@ jar {
     }
 }
 
+test {
+    reports.junitXml.destination = file('build/test-results/test')
+}
+
 apply from: 'https://raw.github.com/barrybecker4/bb4-common/master/bb4-publish.gradle'
 
 
