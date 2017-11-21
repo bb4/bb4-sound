@@ -390,7 +390,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             p.setBorder(new EmptyBorder(10,0,10,0));
             p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
 
-            JComboBox combo = new JComboBox();
+            JComboBox<String> combo = new JComboBox<>();
             combo.setPreferredSize(new Dimension(120,25));
             combo.setMaximumSize(new Dimension(120,25));
             for (int i = 1; i <= 16; i++) {
