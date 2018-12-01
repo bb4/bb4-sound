@@ -67,7 +67,7 @@ class PhoneToken {
 
     /** Pause appropriately if we have encountered punctuation. */
     private boolean pauseForPunctuation() {
-        if (phoneToken.equals(",") || phoneToken.equals(".")) {
+        if (isPunctuation()) {
             if (phoneToken.equals(",")) {
                 ThreadUtil.sleep(COMMA_PAUSE);
             }
@@ -77,6 +77,10 @@ class PhoneToken {
             return true;
         }
         return false;
+    }
+
+    private boolean isPunctuation() {
+        return (phoneToken.equals(",") || phoneToken.equals("."));
     }
 
     /*
@@ -126,7 +130,7 @@ class PhoneToken {
      * This method plays a sound sample.
      */
     public void playSound( byte[] data ) {
-        if (data == null) return;
+        if (data == null || isPunctuation()) return;
         if (line == null) {
             throw new IllegalArgumentException("Problem processing " + phoneToken);
         }
