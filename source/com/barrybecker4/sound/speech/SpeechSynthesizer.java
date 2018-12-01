@@ -4,8 +4,8 @@
 package com.barrybecker4.sound.speech;
 
 /**
- * Makes the somputer speak using speech synthesis.
- * See http://www.javaworld.com/javaworld/jw-08-2001/jw-0817-javatalk.html?page=1
+ * Makes the computer speak using speech synthesis.
+ * See https://www.javaworld.com/article/2075495/java-se/talking-java-.html
  *
  * The speech engine works by concatenating short sound samples that represent the smallest
  * units of human -- in this case English -- speech.
@@ -87,7 +87,7 @@ package com.barrybecker4.sound.speech;
 public class SpeechSynthesizer {
 
     /**
-     * This method speaks the given phonetic words.
+     * Speaks the given phonetic words.
      */
     public void sayText( String text )  {
         sayPhoneWords( text.split(" "));
@@ -103,7 +103,7 @@ public class SpeechSynthesizer {
     }
 
     /**
-     * This method speaks a phonetic word specified on the command line.
+     * Speaks a phonetic word specified on the command line.
      */
     public static void main( String args[] ) {
         SpeechSynthesizer synthesizer = new SpeechSynthesizer();

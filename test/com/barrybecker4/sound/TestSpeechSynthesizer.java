@@ -2,7 +2,6 @@
 package com.barrybecker4.sound;
 
 import com.barrybecker4.sound.speech.SpeechSynthesizer;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -18,9 +17,6 @@ public class TestSpeechSynthesizer {
     private static final SpeechSynthesizer speech = new SpeechSynthesizer();
 
 
-    @Before
-    public void setUp() {}
-
     @Test
     public void testSayEnterNumber() {
         speech.sayText( ENTER_NUMBER );
@@ -28,8 +24,7 @@ public class TestSpeechSynthesizer {
 
     @Test
     public void testSayGreeting() {
-        //speech.sayText("w|u|d y|ouu l|ii|k t|ouu p|l|ay aa gg|AY|M .");
-        speech.sayPhoneWords( PLAY_GAME );
+        speech.sayPhoneWords(  PLAY_GAME );
     }
 
     /** Why can't it say a as in apple?

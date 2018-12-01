@@ -87,11 +87,11 @@ public class Instruments {
         instruments_ = soundBank.getInstruments();
     }
 
-    Instrument getInstrument(int i) {
+    public Instrument getInstrument(int i) {
         return instruments_[i];
     }
 
-    int getNumInstruments() {
+    public int getNumInstruments() {
         return instruments_.length;
     }
 

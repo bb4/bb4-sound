@@ -15,14 +15,14 @@ class PhoneWord {
     private String phoneWord;
 
     /**
-     * This method speaks the given phonetic word.
+     * Speaks the given phonetic word.
      */
     PhoneWord(String word) {
         phoneWord = word;
     }
 
     /**
-     * This method speaks the given phonetic word.
+     * Speaks the given phonetic word.
      */
     void say() {
         // -- set up a dummy byte array for the previous sound --
