@@ -16,8 +16,8 @@ public class MusicMaker {
 
     private Synthesizer synthesizer;
     private Instruments instruments;
-    private MidiChannel midiChannels_[];
-    private MidiChannel channel_;    // current channel
+    private MidiChannel midiChannels[];
+    private MidiChannel channel;    // current channel
 
 
     /** Constructor  */
@@ -52,15 +52,15 @@ public class MusicMaker {
             assert false : "no sound bank";
         }
 
-        midiChannels_ = synthesizer.getChannels();
+        midiChannels = synthesizer.getChannels();
         //System.out.println("num midi channels = "+midiChannels_.magnitude);
-        channel_ = midiChannels_[0];
+        channel = midiChannels[0];
 
-        channel_.resetAllControllers();
-        channel_.setChannelPressure( 128 );
-        channel_.setPitchBend( 128 );
-        channel_.controlChange( 91, 128 ); // reverb
-        channel_.setMute( false );
+        channel.resetAllControllers();
+        channel.setChannelPressure( 128 );
+        channel.setPitchBend( 128 );
+        channel.controlChange( 91, 128 ); // reverb
+        channel.setMute( false );
         //channel_.allNotesOff();
     }
 
@@ -102,11 +102,11 @@ public class MusicMaker {
      * @param velocity loudness/volume (0 - 1000) (Can't hear 100)
      */
     public void startNote( int note, int velocity ) {
-        channel_.noteOn( note, velocity );
+        channel.noteOn( note, velocity );
     }
 
     public void stopNote( int note, int velocity ) {
-        channel_.noteOff( note, velocity );
+        channel.noteOff( note, velocity );
     }
 
     /**
@@ -121,11 +121,11 @@ public class MusicMaker {
             note = 127;
         }
         try {
-            if (channel_ == null) return;
+            if (channel == null) return;
             //System.out.println(note+"  "+duration);
-            channel_.noteOn( note, velocity );
+            channel.noteOn( note, velocity );
             Thread.sleep( duration );
-            channel_.noteOff( note, velocity );
+            channel.noteOff( note, velocity );
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -152,14 +152,14 @@ public class MusicMaker {
         int instrument = 8 * instrumentType + instrumentSubType;
 
         synthesizer.loadInstrument( instruments.getInstrument(instrument));
-        channel_ = midiChannels_[channelIndex];
-        channel_.programChange( instrument );
+        channel = midiChannels[channelIndex];
+        channel.programChange( instrument );
     }
 
 
     /** stop playing all music immediately */
     public void stopAllSounds() {
-        if ( channel_ == null ) return;
-        channel_.allNotesOff();
+        if ( channel == null ) return;
+        channel.allNotesOff();
     }
 }

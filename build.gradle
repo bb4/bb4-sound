@@ -1,7 +1,7 @@
 // Copyright by Barry G. Becker, 2013 - 2017. Licensed under MIT License: http://www.opensource.org/licenses/MIT
 group = 'com.barrybecker4'
 version = '1.6-SNAPSHOT'
-apply from: 'https://raw.github.com/barrybecker4/bb4-common/master/bb4.gradle'
+apply from: 'https://raw.githubusercontent.com/bb4/bb4-common/master/bb4.gradle'
 
 project.archivesBaseName = 'bb4-sound'
 mainClassName = "com.barrybecker4.sound.midi.MidiSynth"
@@ -25,6 +25,6 @@ test {
     reports.junitXml.destination = file('build/test-results/test')
 }
 
-apply from: 'https://raw.github.com/barrybecker4/bb4-common/master/bb4-publish.gradle'
+apply from: 'https://raw.githubusercontent.com/bb4/bb4-common/master/bb4-publish.gradle'
 
 
