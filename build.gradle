@@ -1,24 +1,16 @@
 // Copyright by Barry G. Becker, 2013 - 2017. Licensed under MIT License: http://www.opensource.org/licenses/MIT
+description = 'Sound and speech synthesis library'
 group = 'com.barrybecker4'
 version = '1.6-SNAPSHOT'
+ext {
+    archivesBaseName = 'bb4-sound'
+    mainClass = "com.barrybecker4.sound.midi.MidiSynth"
+}
+
 apply from: 'https://raw.githubusercontent.com/bb4/bb4-common/master/bb4.gradle'
-
-project.archivesBaseName = 'bb4-sound'
-mainClassName = "com.barrybecker4.sound.midi.MidiSynth"
-
 
 dependencies {
     compile 'com.barrybecker4:bb4-common:1.6-SNAPSHOT'
-}
-
-jar {
-    archiveFileName = "${archivesBaseName}-${project.version}.jar"
-    manifest {
-        attributes 'Implementation-Title': 'Sound related code',
-            'Implementation-Version': project.version,
-            'provider': 'gradle',
-            'Main-Class': mainClassName
-    }
 }
 
 test {

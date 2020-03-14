@@ -10,7 +10,7 @@ import org.junit.Test;
  */
 public class MusicMakerTest  {
 
-    private static final int DURATION = 5;
+    private static final int DURATION = 3;
 
     /** instance under test. */
     private static final MusicMaker music = new MusicMaker();
@@ -20,7 +20,7 @@ public class MusicMakerTest  {
     public void testPlayAllInstruments() {
 
         Instruments instruments = music.getInstruments();
-        for (int i=0; i<instruments.getNumInstruments(); i++) {
+        for (int i = 0; i < instruments.getNumInstruments(); i++) {
             music.playNote(i/8, i%8, 50, 1, DURATION, 200);
         }
     }
@@ -30,8 +30,8 @@ public class MusicMakerTest  {
 
         Instruments instruments = music.getInstruments();
 
-        for (int i=0; i<instruments.getNumInstruments(); i++) {
-            music.startNote(i/8, i%8, 80, i%16, 200);
+        for (int i = 0; i < instruments.getNumInstruments(); i++) {
+            music.startNote(i/8, i%8, 80, i % 16, 200);
             ThreadUtil.sleep(DURATION);
         }
         music.stopAllSounds();
