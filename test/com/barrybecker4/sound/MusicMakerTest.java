@@ -3,7 +3,6 @@ package com.barrybecker4.sound;
 
 import com.barrybecker4.common.concurrency.ThreadUtil;
 import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 
 
@@ -17,35 +16,30 @@ public class MusicMakerTest  {
 
     /** instance under test. */
     private static final MusicMaker music = new MusicMaker();
+    private static final Instruments instruments = music.getInstruments();
+    private static final int numInstruments = instruments.getNumInstruments();
 
     @Test
     public void testNumInstruments() {
-
-        Instruments instruments = music.getInstruments();
-        int numInstruments = instruments.getNumInstruments();
         assertEquals("Actual num instruments was " + numInstruments, 235, numInstruments );
-    }
-
-    @Test
-    public void testPlayAllInstruments() {
-
-        Instruments instruments = music.getInstruments();
-        for (int i = 0; i < instruments.getNumInstruments(); i++) {
-            music.playNote(i / 8, i % 8, 50, 1, DURATION, 200);
-        }
     }
 
     @Test
     public void testPlayInstrumentsSimultaneously() {
 
-        Instruments instruments = music.getInstruments();
-
-        for (int i = 0; i < instruments.getNumInstruments(); i++) {
+        for (int i = 0; i < numInstruments; i++) {
             music.startNote(i / 8, i % 8, 80, i % 16, 200);
             ThreadUtil.sleep(2 * DURATION);
         }
         music.stopAllSounds();
     }
 
+    @Test
+    public void testPlayAllInstruments() {
+
+        for (int i = 0; i < numInstruments; i++) {
+            music.playNote(i / 8, i % 8, 50, 1, DURATION, 200);
+        }
+    }
 }
 

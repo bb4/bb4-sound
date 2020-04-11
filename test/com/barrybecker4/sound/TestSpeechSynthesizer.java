@@ -31,12 +31,12 @@ public class TestSpeechSynthesizer {
         speech.sayPhoneWords( PLAY_GAME );
     }
 
-    @Test
-    public void testGiveUp() {
-        speech.sayPhoneWords( GIVE_UP );
-    }
+//    @Test
+//    public void testGiveUp() {
+//        speech.sayPhoneWords( GIVE_UP );
+//    }
 
-    /** Why can't it say a as in apple?
+    /** Why can't it say 'a' as in apple?
     @Test
     public void testSayApple() {
         String text = "a|p|l 1sp 1sp OU|P_|l 10ms AA_|p|L_ 50ms AA_|p|LL";

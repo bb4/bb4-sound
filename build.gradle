@@ -15,6 +15,7 @@ dependencies {
 
 test {
     reports.junitXml.destination = file('build/test-results/test')
+    maxParallelForks = 1
 }
 
 apply from: 'https://raw.githubusercontent.com/bb4/bb4-common/master/bb4-publish.gradle'
