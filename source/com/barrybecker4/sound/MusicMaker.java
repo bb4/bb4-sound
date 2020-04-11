@@ -16,7 +16,7 @@ public class MusicMaker {
 
     private Synthesizer synthesizer;
     private Instruments instruments;
-    private MidiChannel midiChannels[];
+    private MidiChannel[] midiChannels;
     private MidiChannel channel;    // current channel
 
 

@@ -12,7 +12,7 @@ import javax.sound.midi.Soundbank;
  */
 public class Instruments {
 
-    private Instrument instruments_[];
+    private Instrument instruments[];
 
     // list all the instruments here so they are easy to choose from
     // This is just my favorite subset of those that are available
@@ -84,30 +84,30 @@ public class Instruments {
 
     /** Constructor  */
     Instruments(Soundbank soundBank)  {
-        instruments_ = soundBank.getInstruments();
+        instruments = soundBank.getInstruments();
     }
 
     public Instrument getInstrument(int i) {
-        return instruments_[i];
+        return instruments[i];
     }
 
     public int getNumInstruments() {
-        return instruments_.length;
+        return instruments.length;
     }
 
     String getInstrumentName( int instrumentType, int instrumentSubType ) {
         int i = instrumentSubType + 8 * instrumentType;
-        return instruments_[i].getName();
+        return instruments[i].getName();
     }
 
     /** @return the index for the specified instrument */
     int getInstrumentIndex( String instrument ) {
         int i = 0;
-        if ( instruments_ == null ) return -1;
-        while ( i < instruments_.length && !(instruments_[i].getName().equals( instrument )) )  {
+        if ( instruments == null ) return -1;
+        while ( i < instruments.length && !(instruments[i].getName().equals( instrument )) )  {
             i++;
         }
-        if ( i == instruments_.length ) {
+        if ( i == instruments.length ) {
             System.out.println( "not found ****:     " + instrument );
             return -1;
         }

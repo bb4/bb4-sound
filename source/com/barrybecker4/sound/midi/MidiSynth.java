@@ -103,7 +103,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
     private final Color jfcBlue = new Color(204, 204, 255);
     private final Color pink = new Color(255, 175, 175);
     private MidiSynthModel model;
-    private ChannelData channels[];
+    private ChannelData[] channels;
     private ChannelData cc;    // current channel
 
     private JCheckBox mouseOverCB = new JCheckBox("mouseOver", true);
@@ -145,7 +145,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
     public void open() {
         model.open();
 
-        MidiChannel midiChannels[] = model.getMidiChannels();
+        MidiChannel[] midiChannels = model.getMidiChannels();
         channels = new ChannelData[midiChannels.length];
         for (int i = 0; i < channels.length; i++) {
             channels[i] = new ChannelData(midiChannels[i], i);
@@ -156,15 +156,6 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
         lsm.setSelectionInterval(0,0);
         lsm = table.getColumnModel().getSelectionModel();
         lsm.setSelectionInterval(0,0);
-    }
-
-    public void close() {
-        model.close();
-        channels = null;
-        if (recordFrame != null) {
-            recordFrame.dispose();
-            recordFrame = null;
-        }
     }
 
     /**
@@ -255,7 +246,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             setLayout(new BorderLayout());
             setPreferredSize(new Dimension(42*kw, kh+1));
             int transpose = 24;
-            int whiteIDs[] = { 0, 2, 4, 5, 7, 9, 11 };
+            int[] whiteIDs = { 0, 2, 4, 5, 7, 9, 11 };
 
             for (int i = 0, x = 0; i < 6; i++) {
                 for (int j = 0; j < 7; j++, x += kw) {
@@ -497,8 +488,8 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             muteCB.setSelected(cc.mute);
             //sustCB.setSelected(sustain);
 
-            JSlider slider[] = { veloS, presS, bendS, revbS };
-            int v[] = { cc.velocity, cc.pressure, cc.bend, cc.reverb };
+            JSlider[] slider = { veloS, presS, bendS, revbS };
+            int[] v = { cc.velocity, cc.pressure, cc.bend, cc.reverb };
             for (int i = 0; i < slider.length; i++) {
                 TitledBorder tb = (TitledBorder) slider[i].getBorder();
                 String s = tb.getTitle();
@@ -699,7 +690,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
         }
     }
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         final MidiSynth midiSynth = new MidiSynth();
         midiSynth.open();
         JFrame f = new JFrame("Midi Synthesizer");

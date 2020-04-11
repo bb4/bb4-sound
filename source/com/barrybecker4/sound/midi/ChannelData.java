@@ -1,6 +1,5 @@
 package com.barrybecker4.sound.midi;
 
-
 import javax.sound.midi.MidiChannel;
 
 /**

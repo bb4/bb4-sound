@@ -105,7 +105,7 @@ public class SpeechSynthesizer {
     /**
      * Speaks a phonetic word specified on the command line.
      */
-    public static void main( String args[] ) {
+    public static void main( String[] args ) {
         SpeechSynthesizer synthesizer = new SpeechSynthesizer();
         if ( args.length > 0 ) {
             synthesizer.sayText(args[0]);

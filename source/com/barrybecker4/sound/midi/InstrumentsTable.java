@@ -19,7 +19,7 @@ class InstrumentsTable extends JPanel {
 
     static int NUM_ROWS = 8;
 
-    private String names[] = {
+    private String[] names = {
             "Piano", "Chromatic Perc.", "Organ", "Guitar",
             "Bass", "Strings", "Ensemble", "Brass",
             "Reed", "Pipe", "Synth Lead", "Synth Pad",
@@ -67,12 +67,10 @@ class InstrumentsTable extends JPanel {
 
         // Listener for column changes
         lsm = table.getColumnModel().getSelectionModel();
-        lsm.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                ListSelectionModel sm = (ListSelectionModel) e.getSource();
-                if (!sm.isSelectionEmpty()) {
-                    pch.newColumn(sm.getMinSelectionIndex());
-                }
+        lsm.addListSelectionListener(e -> {
+            ListSelectionModel sm = (ListSelectionModel) e.getSource();
+            if (!sm.isSelectionEmpty()) {
+                pch.newColumn(sm.getMinSelectionIndex());
             }
         });
 
