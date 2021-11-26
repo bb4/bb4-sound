@@ -4,15 +4,16 @@ buildscript {
     repositories {
         // retrieve the shared gradle build scripts from here
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/"}
+        maven { url "https://oss.sonatype.org/content/repositories/releases" }
     }
     dependencies {
-        classpath 'com.barrybecker4:bb4-gradle:1.6-SNAPSHOT'
+        classpath 'com.barrybecker4:bb4-gradle:1.7'
     }
 }
 
 description = 'Sound and speech synthesis library'
 group = 'com.barrybecker4'
-version = '1.6-SNAPSHOT'
+version = '1.7'
 ext {
     archivesBaseName = 'bb4-sound'
     mainClass = "com.barrybecker4.sound.midi.MidiSynth"
@@ -20,7 +21,7 @@ ext {
 apply from: project.buildscript.classLoader.getResource('bb4.gradle').toURI()
 
 dependencies {
-    compile 'com.barrybecker4:bb4-common:1.6-SNAPSHOT'
+    implementation 'com.barrybecker4:bb4-common:1.7'
 }
 
 test {
