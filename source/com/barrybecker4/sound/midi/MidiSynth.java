@@ -84,8 +84,7 @@ import java.util.Vector;
 
 /**
  * Illustrates general MIDI melody instruments and MIDI controllers.
- *
- * @version @(#)MidiSynth.java	1.15 99/12/03
+ * 1.15 99/12/03
  * @author Brian Lichtenwalter
  */
 public class MidiSynth extends JPanel implements ProgramChangeHandler {
@@ -232,7 +231,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
 
 
     /**
-     * Piano renders black & white keys and plays the notes for a MIDI
+     * Piano renders black &amp; white keys and plays the notes for a MIDI
      * channel.
      */
     class Piano extends JPanel implements MouseListener {
@@ -518,7 +517,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
     }
 
     /**
-     * A frame that allows for midi capture & saving the captured data.
+     * A frame that allows for midi capture &amp; saving the captured data.
      */
     class RecordFrame extends JFrame implements ActionListener, MetaEventListener {
 

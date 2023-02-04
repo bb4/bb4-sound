@@ -7,13 +7,13 @@ buildscript {
         maven { url "https://oss.sonatype.org/content/repositories/releases" }
     }
     dependencies {
-        classpath 'com.barrybecker4:bb4-gradle:1.7'
+        classpath 'com.barrybecker4:bb4-gradle:1.8-SNAPSHOT'
     }
 }
 
 description = 'Sound and speech synthesis library'
 group = 'com.barrybecker4'
-version = '1.7'
+version = '1.8-SNAPSHOT'
 ext {
     archivesBaseName = 'bb4-sound'
     mainClass = "com.barrybecker4.sound.midi.MidiSynth"
@@ -21,7 +21,7 @@ ext {
 apply from: project.buildscript.classLoader.getResource('bb4.gradle').toURI()
 
 dependencies {
-    implementation 'com.barrybecker4:bb4-common:1.7'
+    implementation 'com.barrybecker4:bb4-common:1.8-SNAPSHOT'
 }
 
 test {
