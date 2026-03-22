@@ -3,11 +3,13 @@
  */
 package com.barrybecker4.sound.speech;
 
-import java.util.StringTokenizer;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Represents a single phonetic word.
- * See http://www.javaworld.com/javaworld/jw-08-2001/jw-0817-javatalk.html?page=1
+ * See http://www.javaworld.com/javaworld/jw-08-2001/jw-0817-javatalk.html
  * Represents and "says" a phonetic word.
  */
 class PhoneWord {
@@ -22,23 +24,28 @@ class PhoneWord {
     }
 
     /**
+     * Split a word into allophone tokens (delimiter {@code |}).
+     * Empty or null input yields an empty list.
+     */
+    static List<String> splitAllophones(String word) {
+        if (word == null || word.isEmpty()) {
+            return List.of();
+        }
+        return Collections.unmodifiableList(Arrays.asList(word.split("\\|", -1)));
+    }
+
+    /**
      * Speaks the given phonetic word.
      */
     void say() {
-        // -- set up a dummy byte array for the previous sound --
         byte[] previousSound = null;
 
-        // -- split the input string into separate allophones --
-        StringTokenizer st = new StringTokenizer( phoneWord, "|", false );
-
-        //System.out.println("about to say: "+ word);
         PhoneToken token = null;
-        while ( st.hasMoreTokens() ) {
-            token = new PhoneToken(st.nextToken());
+        for (String t : splitAllophones(phoneWord)) {
+            token = new PhoneToken(t);
             previousSound = token.process(previousSound);
         }
 
-        // -- play the final sound and drain the sound channel --
         if (token != null)  {
             token.playSound( previousSound );
             token.drain();

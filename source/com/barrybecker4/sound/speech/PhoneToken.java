@@ -11,6 +11,7 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
+import java.io.IOException;
 import java.net.URL;
 
 /**
@@ -31,7 +32,7 @@ class PhoneToken {
     private static final String RESOURCE_PATH = "com/barrybecker4/sound/allophones/";
     private static final int COMMA_PAUSE = 200;
     private static final int PERIOD_PAUSE = 680;
-    private static final int MAX_MERGE_COUNT = 1000;
+    static final int MAX_MERGE_COUNT = 1000;
 
     /** delay in millis between words. */
     private static final int DELAY_BETWEEN_WORDS = 200;
@@ -46,6 +47,29 @@ class PhoneToken {
      */
     PhoneToken(String token) {
         phoneToken = token;
+    }
+
+    /**
+     * How many samples to blend at the boundary when both buffers are long enough.
+     */
+    static int computeMergeCount(byte[] previousSound, byte[] thisSound, int maxMergeThreshold) {
+        if (previousSound.length >= maxMergeThreshold && thisSound.length >= maxMergeThreshold) {
+            return maxMergeThreshold;
+        }
+        return 0;
+    }
+
+    static void mergeAllophonesInPlace(byte[] previousSound, byte[] thisSound, int mergeCount) {
+        for (int i = 0; i < mergeCount; i++) {
+            previousSound[previousSound.length - mergeCount + i]
+                    = (byte) ((previousSound[previousSound.length - mergeCount + i] + thisSound[i]) / 2);
+        }
+    }
+
+    static byte[] truncateAfterMerge(byte[] thisSound, int mergeCount) {
+        byte[] newSound = new byte[thisSound.length - mergeCount];
+        System.arraycopy(thisSound, mergeCount, newSound, 0, newSound.length);
+        return newSound;
     }
 
 
@@ -103,23 +127,14 @@ class PhoneToken {
      */
     private byte[] sayPhoneToken(byte[] previousSound, byte[] thisSound) {
         if ( previousSound != null ) {
-            // -- merge the previous allophone with this one if we can --
-            int mergeCount = 0;
-            if ( previousSound.length >= MAX_MERGE_COUNT && thisSound.length >= MAX_MERGE_COUNT )  {
-                mergeCount = MAX_MERGE_COUNT;
-            }
-            for ( int i = 0; i < mergeCount; i++ ) {
-                previousSound[previousSound.length - mergeCount + i]
-                        = (byte) ((previousSound[previousSound.length - mergeCount + i] + thisSound[i]) / 2);
-            }
+            int mergeCount = computeMergeCount(previousSound, thisSound, MAX_MERGE_COUNT);
+            mergeAllophonesInPlace(previousSound, thisSound, mergeCount);
 
             // -- play the previous allophone --
             playSound( previousSound );
 
             // -- set the truncated current allophone as previous --
-            byte[] newSound = new byte[thisSound.length - mergeCount];
-            System.arraycopy(thisSound, mergeCount, newSound, 0, newSound.length);
-            return newSound;
+            return truncateAfterMerge(thisSound, mergeCount);
         }
         else {
             return thisSound;
@@ -145,49 +160,47 @@ class PhoneToken {
      */
     private byte[] getSound( String sPath ) {
         try {
-            //URL url = SpeechSynthesizer.class.getResource( fileName );
             URL url = FileUtil.getURL(sPath);
-            AudioInputStream stream = AudioSystem.getAudioInputStream( url );
-            AudioFormat format = stream.getFormat();
-
-            // -- convert an ALAW/ULAW sound to PCM for playback --
-            if ( (format.getEncoding() == AudioFormat.Encoding.ULAW) ||
-                    (format.getEncoding() == AudioFormat.Encoding.ALAW) ) {
-                AudioFormat tmpFormat = createAudioFormat(format);
-                stream = AudioSystem.getAudioInputStream( tmpFormat, stream );
-                format = tmpFormat;
+            try (AudioInputStream stream = openPcmStream(url)) {
+                AudioFormat format = stream.getFormat();
+                if ( line == null ) {
+                    line = createDataLine(format);
+                }
+                return readFirstSampleBuffer(stream, format);
             }
-
-            if ( line == null ) {
-                line = createDataLine(format);
-            }
-
-            // -- some size calculations --
-            int frameSizeInBytes = format.getFrameSize();
-            int bufferLengthInFrames = line.getBufferSize() >> 3;
-            int bufferLengthInBytes = bufferLengthInFrames * frameSizeInBytes;
-
-            byte[] data = new byte[bufferLengthInBytes];
-
-            // -- read the data bytes and count them --
-            int numBytesRead = 0;
-            numBytesRead = stream.read(data);
-
-            byte maxByte = 0;
-
-            // -- truncate the byte array to the correct size --
-            byte[] newData = new byte[numBytesRead];
-            for ( int i = 0; i < numBytesRead; i++ ) {
-                newData[i] = data[i];
-                if ( newData[i] > maxByte ) maxByte = newData[i];
-            }
-
-            return newData;
         } catch (Exception e) {
-            System.out.println( "Something wrong with " + sPath );
+            System.err.println("Failed to load allophone audio: " + sPath);
             e.printStackTrace();
             return new byte[0];
         }
+    }
+
+    private AudioInputStream openPcmStream(URL url) throws Exception {
+        AudioInputStream stream = AudioSystem.getAudioInputStream(url);
+        AudioFormat format = stream.getFormat();
+        if (format.getEncoding() == AudioFormat.Encoding.ULAW
+                || format.getEncoding() == AudioFormat.Encoding.ALAW) {
+            AudioFormat tmpFormat = createAudioFormat(format);
+            return AudioSystem.getAudioInputStream(tmpFormat, stream);
+        }
+        return stream;
+    }
+
+    private byte[] readFirstSampleBuffer(AudioInputStream stream, AudioFormat format) throws IOException {
+        int frameSizeInBytes = format.getFrameSize();
+        int bufferLengthInFrames = line.getBufferSize() >> 3;
+        int bufferLengthInBytes = bufferLengthInFrames * frameSizeInBytes;
+
+        byte[] data = new byte[bufferLengthInBytes];
+
+        int numBytesRead = stream.read(data);
+        if (numBytesRead <= 0) {
+            return new byte[0];
+        }
+
+        byte[] newData = new byte[numBytesRead];
+        System.arraycopy(data, 0, newData, 0, numBytesRead);
+        return newData;
     }
 
     private AudioFormat createAudioFormat(AudioFormat format) {
@@ -203,14 +216,11 @@ class PhoneToken {
 
     private SourceDataLine createDataLine(AudioFormat format) throws Exception {
         SourceDataLine dataLine;
-        // -- output line not instantiated yet --
-        // -- can we find a suitable kind of line? --
         DataLine.Info outInfo = new DataLine.Info( SourceDataLine.class, format );
         if ( !AudioSystem.isLineSupported( outInfo ) ) {
             throw new Exception( "Line matching " + outInfo + " not supported." );
         }
 
-        // -- open the source data line (the output line) --
         dataLine = (SourceDataLine) AudioSystem.getLine( outInfo );
         dataLine.open( format, 50000 );
         dataLine.start();

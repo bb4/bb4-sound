@@ -79,8 +79,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * Illustrates general MIDI melody instruments and MIDI controllers.
@@ -89,35 +89,58 @@ import java.util.Vector;
  */
 public class MidiSynth extends JPanel implements ProgramChangeHandler {
 
+    /** MIDI status byte for program change messages ({@code 0xC0} base). */
     private final static int PROGRAM = 192;
 
+    /** MIDI control change number for sustain pedal. */
     private final static int SUSTAIN = 64;
+    /** MIDI control change number for reverb depth. */
     private final static int REVERB = 91;
 
+    /** MIDI status byte for note-on ({@code 0x90} base). */
     private final static  int NOTEON = 144;
+    /** MIDI status byte for note-off ({@code 0x80} base). */
     private final static int NOTEOFF = 128;
+    /** Key state constant: note held (pressed). */
     private final static int ON = 0;
+    /** Key state constant: note released. */
     private final static int OFF = 1;
 
+    /** Fill color for active white keys when not recording. */
     private final Color jfcBlue = new Color(204, 204, 255);
+    /** Fill color for active keys while recording. */
     private final Color pink = new Color(255, 175, 175);
+    /** Synthesizer and sequencer state. */
     private MidiSynthModel model;
+    /** Per-MIDI-channel UI and controller state. */
     private ChannelData[] channels;
-    private ChannelData cc;    // current channel
+    /** Currently selected channel. */
+    private ChannelData cc;
 
+    /** When selected, moving the mouse over keys plays them without clicking. */
     private JCheckBox mouseOverCB = new JCheckBox("mouseOver", true);
+    /** Sliders for velocity, channel pressure, pitch bend, and reverb. */
     private JSlider veloS, presS, bendS, revbS;
+    /** Channel mode toggles (solo, mono, mute; sustain reserved). */
     private JCheckBox soloCB, monoCB, muteCB, sustCB;
-    private List<Key> keys = new Vector<Key>();
-    private List<Key> whiteKeys = new Vector<Key>();
+    /** All piano keys, hit-testing order (black drawn on top of white). */
+    private List<Key> keys = new ArrayList<>();
+    /** White keys only, for painting order. */
+    private List<Key> whiteKeys = new ArrayList<>();
+    /** Instrument picker table. */
     private JTable table;
 
+    /** Whether a recording session is in progress. */
     private boolean record;
+    /** MIDI track being recorded. */
     private Track track;
+    /** Wall-clock millis when recording started (for event timestamps). */
     private long startTime;
+    /** Non-modal capture window, or {@code null} if closed. */
     private RecordFrame recordFrame;
 
 
+    /** Builds the piano, controllers, and instrument table. */
     public MidiSynth() {
         model = new MidiSynthModel();
         setLayout(new BorderLayout());
@@ -141,6 +164,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
         add(p);
     }
 
+    /** Opens the default synthesizer and wires {@link #channels} to the UI. */
     public void open() {
         model.open();
 
@@ -158,13 +182,12 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
     }
 
     /**
-     * given 120 bpm:
-     *   (120 bpm) / (60 seconds per minute) = 2 beats per second
-     *   2 / 1000 beats per millisecond
-     *   (2 * resolution) ticks per second
-     *   (2 * resolution)/1000 ticks per millisecond, or
-     *      (resolution / 500) ticks per millisecond
-     *   ticks = milliseconds * resolution / 500
+     * Appends a short MIDI message to the recording track.
+     * Tick timing uses sequence resolution: e.g. at 120 BPM,
+     * {@code ticks = elapsedMillis * resolution / 500}.
+     *
+     * @param type raw status byte category (e.g. note or program change)
+     * @param num  first data byte (note number or program)
      */
     private void createShortEvent(int type, int num) {
         ShortMessage message = new ShortMessage();
@@ -177,16 +200,25 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
         } catch (Exception ex) { ex.printStackTrace(); }
     }
 
+    /**
+     * @param row selected instrument row in the table
+     */
     public void newRow(int row) {
        cc.row = row;
        programChange(cc.col * InstrumentsTable.NUM_ROWS + cc.row);
     }
 
+    /**
+     * @param column selected instrument column in the table
+     */
     public void newColumn(int column) {
-        cc.col = column;
-        programChange(cc.col * InstrumentsTable.NUM_ROWS + cc.row);
+       cc.col = column;
+       programChange(cc.col * InstrumentsTable.NUM_ROWS + cc.row);
     }
 
+    /**
+     * @param program MIDI program number (0-based instrument index)
+     */
     public void programChange(int program) {
         if (model.hasInstruments()) {
             model.loadInstrument(program);
@@ -201,15 +233,26 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
      * Black and white keys or notes on the piano.
      */
     class Key extends Rectangle {
+        /** {@link #ON} or {@link #OFF}. */
         int noteState = OFF;
+        /** MIDI note number for this key. */
         int kNum;
+        /**
+         * @param x left
+         * @param y top
+         * @param width pixel width
+         * @param height pixel height
+         * @param num MIDI note number
+         */
         Key(int x, int y, int width, int height, int num) {
             super(x, y, width, height);
             kNum = num;
         }
+        /** @return whether the key is currently held */
         boolean isNoteOn() {
             return noteState == ON;
         }
+        /** Sends note-on and optionally records it. */
         void on() {
             setNoteState(ON);
             cc.channel.noteOn(kNum, cc.velocity);
@@ -217,6 +260,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
                 createShortEvent(NOTEON, kNum);
             }
         }
+        /** Sends note-off and optionally records it. */
         void off() {
             setNoteState(OFF);
             cc.channel.noteOff(kNum, cc.velocity);
@@ -224,6 +268,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
                 createShortEvent(NOTEOFF, kNum);
             }
         }
+        /** @param state {@link #ON} or {@link #OFF} */
         void setNoteState(int state) {
             noteState = state;
         }
@@ -236,11 +281,15 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
      */
     class Piano extends JPanel implements MouseListener {
 
-        List<Key> blackKeys = new Vector<>();
+        /** Black keys (shorter, drawn above white keys). */
+        List<Key> blackKeys = new ArrayList<>();
+        /** Key under the mouse or last clicked; may be {@code null}. */
         Key prevKey;
+        /** White key width and height in pixels. */
         final int kw = 16, kh = 80;
 
 
+        /** Lays out keys for just over four octaves and attaches mouse listeners. */
         Piano() {
             setLayout(new BorderLayout());
             setPreferredSize(new Dimension(42*kw, kh+1));
@@ -269,6 +318,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             addMouseListener(this);
         }
 
+        /** {@inheritDoc} */
         public void mousePressed(MouseEvent e) {
             prevKey = getKey(e.getPoint());
             if (prevKey != null) {
@@ -276,12 +326,14 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
                 repaint();
             }
         }
+        /** {@inheritDoc} */
         public void mouseReleased(MouseEvent e) {
             if (prevKey != null) {
                 prevKey.off();
                 repaint();
             }
         }
+        /** {@inheritDoc} */
         public void mouseExited(MouseEvent e) {
             if (prevKey != null) {
                 prevKey.off();
@@ -289,10 +341,14 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
                 prevKey = null;
             }
         }
+        /** {@inheritDoc} */
         public void mouseClicked(MouseEvent e) { }
+        /** {@inheritDoc} */
         public void mouseEntered(MouseEvent e) { }
 
-
+        /** @param point mouse position in this component
+         *  @return the topmost key containing the point, or {@code null}
+         */
         Key getKey(Point point) {
             for (Key key : keys) {
                 if (key.contains(point)) {
@@ -302,6 +358,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             return null;
         }
 
+        /** {@inheritDoc} */
         @Override
         public void paint(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
@@ -334,7 +391,9 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             }
         }
 
+        /** Plays keys under the mouse when {@link #mouseOverCB} is selected. */
         private class MyMouseMotionAdapter extends MouseMotionAdapter {
+            /** {@inheritDoc} */
             @Override
             public void mouseMoved(MouseEvent e) {
                 if (mouseOverCB.isSelected()) {
@@ -357,8 +416,10 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
      */
     class Controls extends JPanel implements ActionListener, ChangeListener, ItemListener {
 
+        /** Opens {@link RecordFrame} when pressed. */
         JButton recordB;
 
+        /** Builds sliders, channel selector, checkboxes, and record control. */
         Controls() {
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             setBorder(new EmptyBorder(5,10,5,10));
@@ -403,6 +464,11 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             add(p);
         }
 
+        /**
+         * @param name button label
+         * @param p panel to add the button to
+         * @return the new button
+         */
         JButton createButton(String name, JPanel p) {
             JButton b = new JButton(name);
             b.addActionListener(this);
@@ -410,6 +476,11 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             return b;
         }
 
+        /**
+         * @param name checkbox label
+         * @param p panel to add the checkbox to
+         * @return the new checkbox
+         */
         private JCheckBox createCheckBox(String name, JPanel p) {
             JCheckBox cb = new JCheckBox(name);
             cb.addItemListener(this);
@@ -417,6 +488,11 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             return cb;
         }
 
+        /**
+         * @param name slider title prefix (0–127 range)
+         * @param p panel to add the slider to
+         * @return the new slider
+         */
         private JSlider createSlider(String name, JPanel p) {
             JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 127, 64);
             slider.addChangeListener(this);
@@ -428,6 +504,11 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             return slider;
         }
 
+        /**
+         * @param name slider title prefix (14-bit pitch bend range)
+         * @param p panel to add the slider to
+         * @return the new slider
+         */
         private JSlider create14BitSlider(String name, JPanel p) {
             JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 16383, 8192);
             slider.addChangeListener(this);
@@ -439,6 +520,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             return slider;
         }
 
+        /** {@inheritDoc} */
         public void stateChanged(ChangeEvent e) {
             JSlider slider = (JSlider) e.getSource();
             int value = slider.getValue();
@@ -457,6 +539,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             slider.repaint();
         }
 
+        /** {@inheritDoc} */
         public void itemStateChanged(ItemEvent e) {
             if (e.getSource() instanceof JComboBox) {
                 JComboBox combo = (JComboBox) e.getSource();
@@ -478,6 +561,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             }
         }
 
+        /** Syncs sliders and checkboxes to the given channel snapshot. */
         private void setComponentStates(ChannelData cc) {
             table.setRowSelectionInterval(cc.row, cc.row);
             table.setColumnSelectionInterval(cc.col, cc.col);
@@ -497,6 +581,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             }
         }
 
+        /** {@inheritDoc} */
         public void actionPerformed(ActionEvent e) {
             JButton button = (JButton) e.getSource();
             if (button.getText().startsWith("All")) {
@@ -521,11 +606,16 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
      */
     class RecordFrame extends JFrame implements ActionListener, MetaEventListener {
 
+        /** Start/stop recording, play/stop playback, save to file. */
         JButton recordB, playB, saveB;
-        List<TrackData> tracks = new Vector<>();
+        /** One entry per completed recording pass. */
+        List<TrackData> tracks = new ArrayList<>();
+        /** Backing model for {@link #table}. */
         TableModel dataModel;
+        /** Lists recorded tracks (channel and instrument name). */
         JTable table;
 
+        /** Creates the toolbar, table, and shows the window centered on screen. */
         RecordFrame() {
             super("Midi Capture");
             addWindowListener(new WindowAdapter() {
@@ -534,19 +624,28 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
 
             model.addSequence(this);
 
-            JPanel p2 = new JPanel();
-            p2.setBorder(new EmptyBorder(5,5,5,5));
-            p2.setLayout(new BoxLayout(p2, BoxLayout.X_AXIS));
+            JPanel north = new JPanel();
+            north.setBorder(new EmptyBorder(5,5,5,5));
+            north.setLayout(new BoxLayout(north, BoxLayout.X_AXIS));
 
-            recordB = createButton("Record", p2, true);
-            playB = createButton("Play", p2, false);
-            saveB = createButton("Save...", p2, false);
+            recordB = createButton("Record", north, true);
+            playB = createButton("Play", north, false);
+            saveB = createButton("Save...", north, false);
 
-            getContentPane().add("North", p2);
+            getContentPane().add("North", north);
 
-            final String[] names = { "Channel #", "Instrument" };
+            final String[] columnNames = { "Channel #", "Instrument" };
+            dataModel = buildTracksTableModel(columnNames);
+            table = new JTable(dataModel);
+            layoutTableScrollPane();
+        }
 
-            dataModel = new AbstractTableModel() {
+        /**
+         * @param names column titles
+         * @return table model over {@link #tracks}
+         */
+        private TableModel buildTracksTableModel(final String[] names) {
+            return new AbstractTableModel() {
                 public int getColumnCount() { return names.length; }
                 public int getRowCount() { return tracks.size();}
                 public Object getValueAt(int row, int col) {
@@ -558,8 +657,14 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
                     return null;
                 }
                 public String getColumnName(int col) {return names[col]; }
-                public Class getColumnClass(int c) {
-                    return getValueAt(0, c).getClass();
+                public Class<?> getColumnClass(int c) {
+                    if (c == 0) {
+                        return Integer.class;
+                    }
+                    if (c == 1) {
+                        return String.class;
+                    }
+                    return Object.class;
                 }
                 public boolean isCellEditable(int row, int col) {
                     return false;
@@ -572,10 +677,12 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
                     }
                 }
             };
+        }
 
-            table = new JTable(dataModel);
-            TableColumn col = table.getColumn("Channel #");
-            col.setMaxWidth(65);
+        /** Adds the scrollable track table and sizes the frame. */
+        private void layoutTableScrollPane() {
+            TableColumn channelCol = table.getColumn("Channel #");
+            channelCol.setMaxWidth(65);
             table.sizeColumnsToFit(0);
 
             JScrollPane scrollPane = new JScrollPane(table);
@@ -593,6 +700,12 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
         }
 
 
+        /**
+         * @param name button label
+         * @param p parent panel
+         * @param state initial enabled state
+         * @return the new button
+         */
         JButton createButton(String name, JPanel p, boolean state) {
             JButton b = new JButton(name);
             b.setFont(new Font("Verdana", Font.PLAIN, 10));
@@ -602,70 +715,102 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             return b;
         }
 
+        /** {@inheritDoc} */
         public void actionPerformed(ActionEvent e) {
             JButton button = (JButton) e.getSource();
             if (button.equals(recordB)) {
-                record = recordB.getText().startsWith("Record");
-                if (record) {
-                    track = model.getSequence().createTrack();
-                    startTime = System.currentTimeMillis();
-
-                    // add a program change right at the beginning of
-                    // the track for the current instrument
-                    createShortEvent(PROGRAM,cc.col * InstrumentsTable.NUM_ROWS + cc.row);
-
-                    recordB.setText("Stop");
-                    playB.setEnabled(false);
-                    saveB.setEnabled(false);
-                } else {
-                    String name;
-                    if (model.hasInstruments()) {
-                        name = model.getInstrument(cc.col * InstrumentsTable.NUM_ROWS + cc.row).getName();
-                    } else {
-                        name = Integer.toString(cc.col * InstrumentsTable.NUM_ROWS + cc.row);
-                    }
-                    tracks.add(new TrackData(cc.num+1, name, track));
-                    table.tableChanged(new TableModelEvent(dataModel));
-                    recordB.setText("Record");
-                    playB.setEnabled(true);
-                    saveB.setEnabled(true);
-                }
+                handleRecordToggle();
             } else if (button.equals(playB)) {
-                if (playB.getText().startsWith("Play")) {
-                    try {
-                        model.getSequencer().open();
-                        model.getSequencer().setSequence(model.getSequence());
-                    } catch (Exception ex) { ex.printStackTrace(); }
-                    model.getSequencer().start();
-                    playB.setText("Stop");
-                    recordB.setEnabled(false);
-                } else {
-                    model.getSequencer().stop();
-                    playB.setText("Play");
-                    recordB.setEnabled(true);
-                }
+                handlePlayToggle();
             } else if (button.equals(saveB)) {
-                try {
-                    System.out.println("about to ready user.dir property.");
-                    File file = new File(System.getProperty("user.dir"));
-                    JFileChooser fc = new JFileChooser(file);
-                    fc.setFileFilter(new javax.swing.filechooser.FileFilter() {
-                        public boolean accept(File f) {
-                            return f.isDirectory();
-                        }
-                        public String getDescription() {
-                            return "Save as .mid file.";
-                        }
-                    });
-                    if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-                        saveMidiFile(fc.getSelectedFile());
-                    }
-                } catch (SecurityException ex) {
-                    ex.printStackTrace();
-                }
+                handleSaveRequest();
             }
         }
 
+        /** Toggles between recording and not, updating UI and sequence state. */
+        private void handleRecordToggle() {
+            record = recordB.getText().startsWith("Record");
+            if (record) {
+                startRecordingSession();
+            } else {
+                stopRecordingSession();
+            }
+        }
+
+        /** Begins a new MIDI track and timestamps from {@link MidiSynth#startTime}. */
+        private void startRecordingSession() {
+            track = model.getSequence().createTrack();
+            startTime = System.currentTimeMillis();
+            createShortEvent(PROGRAM,cc.col * InstrumentsTable.NUM_ROWS + cc.row);
+            recordB.setText("Stop");
+            playB.setEnabled(false);
+            saveB.setEnabled(false);
+        }
+
+        /** Finalizes the current track and appends it to {@link #tracks}. */
+        private void stopRecordingSession() {
+            String name;
+            if (model.hasInstruments()) {
+                name = model.getInstrument(cc.col * InstrumentsTable.NUM_ROWS + cc.row).getName();
+            } else {
+                name = Integer.toString(cc.col * InstrumentsTable.NUM_ROWS + cc.row);
+            }
+            tracks.add(new TrackData(cc.num+1, name, track));
+            table.tableChanged(new TableModelEvent(dataModel));
+            recordB.setText("Record");
+            playB.setEnabled(true);
+            saveB.setEnabled(true);
+        }
+
+        /** Starts or stops the built-in sequencer playback. */
+        private void handlePlayToggle() {
+            if (playB.getText().startsWith("Play")) {
+                startPlayback();
+            } else {
+                stopPlayback();
+            }
+        }
+
+        /** Opens the sequencer, loads {@link MidiSynthModel#getSequence()}, and plays. */
+        private void startPlayback() {
+            try {
+                model.getSequencer().open();
+                model.getSequencer().setSequence(model.getSequence());
+            } catch (Exception ex) { ex.printStackTrace(); }
+            model.getSequencer().start();
+            playB.setText("Stop");
+            recordB.setEnabled(false);
+        }
+
+        /** Stops sequencer playback and resets button labels. */
+        private void stopPlayback() {
+            model.getSequencer().stop();
+            playB.setText("Play");
+            recordB.setEnabled(true);
+        }
+
+        /** Shows a save dialog and writes a type-0/1 MIDI file. */
+        private void handleSaveRequest() {
+            try {
+                File file = new File(System.getProperty("user.dir"));
+                JFileChooser fc = new JFileChooser(file);
+                fc.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                    public boolean accept(File f) {
+                        return f.isDirectory();
+                    }
+                    public String getDescription() {
+                        return "Save as .mid file.";
+                    }
+                });
+                if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+                    saveMidiFile(fc.getSelectedFile());
+                }
+            } catch (SecurityException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        /** {@inheritDoc} */
         public void meta(MetaMessage message) {
             if (message.getType() == 47) {  // 47 is end of track
                 playB.setText("Play");
@@ -673,6 +818,9 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
             }
         }
 
+        /**
+         * @param file destination path (typically {@code .mid})
+         */
         void saveMidiFile(File file) {
             try {
                 int[] fileTypes = MidiSystem.getMidiFileTypes(model.getSequence());
@@ -689,6 +837,11 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
         }
     }
 
+    /**
+     * Launches the synthesizer in a frame (standalone demo).
+     *
+     * @param args unused
+     */
     public static void main(String[] args) {
         final MidiSynth midiSynth = new MidiSynth();
         midiSynth.open();

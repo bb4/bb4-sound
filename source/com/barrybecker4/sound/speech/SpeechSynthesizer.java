@@ -86,15 +86,23 @@ package com.barrybecker4.sound.speech;
  */
 public class SpeechSynthesizer {
 
+    /** Creates a speech synthesizer instance. */
+    public SpeechSynthesizer() {
+    }
+
     /**
      * Speaks the given phonetic words.
+     *
+     * @param text space-separated phonetic words (see class documentation)
      */
     public void sayText( String text )  {
         sayPhoneWords( text.split(" "));
     }
 
     /**
-     * This method speaks the given phonetic words.
+     * Speaks each phonetic word in order.
+     *
+     * @param words phonetic spellings using {@code |} between allophones
      */
     public void sayPhoneWords( String[] words ) {
         for (final String word : words) {
@@ -103,7 +111,9 @@ public class SpeechSynthesizer {
     }
 
     /**
-     * Speaks a phonetic word specified on the command line.
+     * Demo entry point: speaks the first command-line argument, or a default phrase.
+     *
+     * @param args optional phonetic text string
      */
     public static void main( String[] args ) {
         SpeechSynthesizer synthesizer = new SpeechSynthesizer();
