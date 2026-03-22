@@ -2,7 +2,7 @@
 package com.barrybecker4.sound;
 
 import com.barrybecker4.sound.speech.SpeechSynthesizer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Barry Becker

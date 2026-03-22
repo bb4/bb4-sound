@@ -1,32 +1,25 @@
 // Copyright by Barry G. Becker, 2013 - 2017. Licensed under MIT License: http://www.opensource.org/licenses/MIT
 
-buildscript {
-    repositories {
-        // retrieve the shared gradle build scripts from here
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/"}
-        maven { url "https://oss.sonatype.org/content/repositories/releases" }
-    }
-    dependencies {
-        classpath 'com.barrybecker4:bb4-gradle:1.8-SNAPSHOT'
-    }
+plugins {
+    id 'com.barrybecker4.bb4.scala-library' version '2.0-SNAPSHOT'
+    id 'com.barrybecker4.bb4.publish' version '2.0-SNAPSHOT'
+    id 'com.barrybecker4.bb4.application' version '2.0-SNAPSHOT'
 }
 
 description = 'Sound and speech synthesis library'
 group = 'com.barrybecker4'
-version = '1.8-SNAPSHOT'
-ext {
-    archivesBaseName = 'bb4-sound'
-    mainClass = "com.barrybecker4.sound.midi.MidiSynth"
+version = '2.0-SNAPSHOT'
+
+bb4 {
+    archivesBaseName.set('bb4-sound')
+    mainClass.set('com.barrybecker4.sound.midi.MidiSynth')
 }
-apply from: project.buildscript.classLoader.getResource('bb4.gradle').toURI()
 
 dependencies {
-    implementation 'com.barrybecker4:bb4-common:1.8-SNAPSHOT'
+    implementation 'com.barrybecker4:bb4-common:2.0-SNAPSHOT'
 }
 
 test {
     reports.junitXml.destination = file('build/test-results/test')
     maxParallelForks = 1
 }
-
-apply from: project.buildscript.classLoader.getResource('bb4-publish.gradle').toURI()

@@ -7,3 +7,6 @@ build/
 bin/
 *.iml
 *.ipr
+.vscode/settings.json
+.metals/
+.bloop/
