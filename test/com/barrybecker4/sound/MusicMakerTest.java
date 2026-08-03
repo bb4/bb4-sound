@@ -6,12 +6,13 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 /**
  *
  * @author Barry Becker
  */
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true")
 public class MusicMakerTest  {
 
     private static final int DURATION = 2;

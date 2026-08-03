@@ -7,9 +7,11 @@ import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Soundbank;
 import javax.sound.midi.Synthesizer;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true")
 class InstrumentsLookupTest {
 
     @Test

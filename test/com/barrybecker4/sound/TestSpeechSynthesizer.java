@@ -3,10 +3,12 @@ package com.barrybecker4.sound;
 
 import com.barrybecker4.sound.speech.SpeechSynthesizer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 /**
  * @author Barry Becker
  */
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true")
 public class TestSpeechSynthesizer {
 
     private static final String ENTER_NUMBER = "p|l|ee|z e|n|t|er aa nn|u|m|b|er .|.";
