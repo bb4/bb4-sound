@@ -8,7 +8,7 @@ plugins {
 
 description = 'Sound and speech synthesis library'
 group = 'com.barrybecker4'
-version = '2.0.0'
+version = '2.1-SNAPSHOT'
 
 bb4 {
     archivesBaseName.set('bb4-sound')
