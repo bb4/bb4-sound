@@ -14,7 +14,7 @@ import java.util.List;
  */
 class PhoneWord {
 
-    private String phoneWord;
+    private final String phoneWord;
 
     /**
      * Speaks the given phonetic word.
@@ -39,16 +39,16 @@ class PhoneWord {
      */
     void say() {
         byte[] previousSound = null;
+        PhoneToken lastToken = null;
 
-        PhoneToken token = null;
         for (String t : splitAllophones(phoneWord)) {
-            token = new PhoneToken(t);
-            previousSound = token.process(previousSound);
+            lastToken = new PhoneToken(t);
+            previousSound = lastToken.process(previousSound);
         }
 
-        if (token != null)  {
-            token.playSound( previousSound );
-            token.drain();
+        if (lastToken != null) {
+            lastToken.playSound(previousSound);
+            lastToken.drain();
         }
     }
 }
