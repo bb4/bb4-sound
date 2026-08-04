@@ -4,8 +4,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -17,67 +15,85 @@ import java.awt.Dimension;
  */
 class InstrumentsTable extends JPanel {
 
-    static int NUM_ROWS = 8;
+    static final int NUM_ROWS = 8;
 
-    private String[] names = {
+    private static final String[] NAMES = {
             "Piano", "Chromatic Perc.", "Organ", "Guitar",
             "Bass", "Strings", "Ensemble", "Brass",
             "Reed", "Pipe", "Synth Lead", "Synth Pad",
-            "Synth Effects", "Ethnic", "Percussive", "Sound Effects" };
+            "Synth Effects", "Ethnic", "Percussive", "Sound Effects"
+    };
 
-    private int nCols = names.length; // just show 128 instruments
-    JTable table;
+    private static final int NUM_COLS = NAMES.length;
+
+    final JTable table;
 
     InstrumentsTable(MidiSynthModel model, ProgramChangeHandler pch) {
         setLayout(new BorderLayout());
 
         TableModel dataModel = new AbstractTableModel() {
-            public int getColumnCount() { return nCols; }
-            public int getRowCount() { return NUM_ROWS;}
+            @Override
+            public int getColumnCount() {
+                return NUM_COLS;
+            }
+
+            @Override
+            public int getRowCount() {
+                return NUM_ROWS;
+            }
+
+            @Override
             public Object getValueAt(int r, int c) {
                 if (model.hasInstruments()) {
                     return model.getInstrument(c * NUM_ROWS + r).getName();
-                } else {
-                    return Integer.toString(c * NUM_ROWS + r);
                 }
+                return Integer.toString(c * NUM_ROWS + r);
             }
+
+            @Override
             public String getColumnName(int c) {
-                return names[c];
+                return NAMES[c];
             }
-            public Class getColumnClass(int c) {
+
+            @Override
+            public Class<?> getColumnClass(int c) {
                 return getValueAt(0, c).getClass();
             }
-            public boolean isCellEditable(int r, int c) {return false;}
-            public void setValueAt(Object obj, int r, int c) {}
+
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+
+            @Override
+            public void setValueAt(Object obj, int r, int c) {
+                // read-only table
+            }
         };
 
         table = new JTable(dataModel);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Listener for row changes
-        ListSelectionModel lsm = table.getSelectionModel();
-        lsm.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                ListSelectionModel sm = (ListSelectionModel) e.getSource();
-                if (!sm.isSelectionEmpty()) {
-                    pch.newRow(sm.getMinSelectionIndex());
-                }
+        ListSelectionModel rowSelection = table.getSelectionModel();
+        rowSelection.addListSelectionListener(e -> {
+            ListSelectionModel sm = (ListSelectionModel) e.getSource();
+            if (!sm.isSelectionEmpty()) {
+                pch.newRow(sm.getMinSelectionIndex());
             }
         });
 
-        // Listener for column changes
-        lsm = table.getColumnModel().getSelectionModel();
-        lsm.addListSelectionListener(e -> {
+        ListSelectionModel colSelection = table.getColumnModel().getSelectionModel();
+        colSelection.addListSelectionListener(e -> {
             ListSelectionModel sm = (ListSelectionModel) e.getSource();
             if (!sm.isSelectionEmpty()) {
                 pch.newColumn(sm.getMinSelectionIndex());
             }
         });
 
-        table.setPreferredScrollableViewportSize(new Dimension(nCols * 110, 200));
+        table.setPreferredScrollableViewportSize(new Dimension(NUM_COLS * 110, 200));
         table.setCellSelectionEnabled(true);
         table.setColumnSelectionAllowed(true);
-        for (String name : names) {
+        for (String name : NAMES) {
             TableColumn column = table.getColumn(name);
             column.setPreferredWidth(110);
         }
@@ -89,9 +105,12 @@ class InstrumentsTable extends JPanel {
         add(sp);
     }
 
+    @Override
     public Dimension getPreferredSize() {
         return new Dimension(800, 170);
     }
+
+    @Override
     public Dimension getMaximumSize() {
         return new Dimension(800, 170);
     }
