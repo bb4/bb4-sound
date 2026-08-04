@@ -4,12 +4,13 @@ package com.barrybecker4.sound.midi;
 import javax.sound.midi.Track;
 
 /**
- * A track os sound data
+ * A recorded MIDI track with display metadata for the capture table.
  */
 class TrackData {
 
-    Integer chanNum; String name;
-    Track track;
+    Integer chanNum;
+    String name;
+    final Track track;
 
     TrackData(int chanNum, String name, Track track) {
         this.chanNum = chanNum;
