@@ -9,6 +9,7 @@ import javax.sound.midi.Soundbank;
 import javax.sound.midi.Synthesizer;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisabledIfEnvironmentVariable(named = "CI", matches = "true")
@@ -39,6 +40,23 @@ class InstrumentsLookupTest {
             Assumptions.assumeTrue(sb != null, "No default soundbank");
             Instruments instruments = new Instruments(sb);
             assertTrue(instruments.getInstrumentIndex("___no_such_instrument___") < 0);
+        } finally {
+            synth.close();
+        }
+    }
+
+    @Test
+    void getInstrumentName_matchesFlatIndexLayout() throws MidiUnavailableException {
+        Synthesizer synth = MidiSystem.getSynthesizer();
+        synth.open();
+        try {
+            Soundbank sb = synth.getDefaultSoundbank();
+            Assumptions.assumeTrue(sb != null, "No default soundbank");
+            Instruments instruments = new Instruments(sb);
+            Assumptions.assumeTrue(instruments.getNumInstruments() > 8, "Need at least one full row");
+            // Layout is column-major groups of 8: index = subType + 8 * type
+            String expected = instruments.getInstrument(9).getName();
+            assertEquals(expected, instruments.getInstrumentName(1, 1));
         } finally {
             synth.close();
         }
