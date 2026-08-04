@@ -13,6 +13,9 @@ import javax.sound.midi.Synthesizer;
 /**
  * MidiSynch Model code extracted from MidiSynth by Brian Lichtenwalter.
  *
+ * Lifecycle: call {@link #open()} before using channels, instruments, or the sequencer.
+ * Fields remain unset ({@code null}) until {@code open()} succeeds.
+ *
  * @author Brian Lichtenwalter
  * @author Barry Becker
  */
@@ -37,6 +40,7 @@ public class MidiSynthModel  {
     boolean hasInstruments()  {
         return instruments != null;
     }
+
     Instrument getInstrument(int i) {
         return instruments[i];
     }
@@ -57,13 +61,16 @@ public class MidiSynthModel  {
         sequencer.addMetaEventListener(listener);
         try {
             sequence = new Sequence(Sequence.PPQ, 10);
-        } catch (Exception ex) { ex.printStackTrace(); }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     void open() {
         try {
             if (synthesizer == null) {
-                if ((synthesizer = MidiSystem.getSynthesizer()) == null) {
+                synthesizer = MidiSystem.getSynthesizer();
+                if (synthesizer == null) {
                     System.out.println("getSynthesizer() failed!");
                     return;
                 }
@@ -71,11 +78,14 @@ public class MidiSynthModel  {
             synthesizer.open();
             sequencer = MidiSystem.getSequencer();
             sequence = new Sequence(Sequence.PPQ, 10);
-        } catch (Exception ex) { ex.printStackTrace(); return; }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return;
+        }
 
         Soundbank sb = synthesizer.getDefaultSoundbank();
         if (sb != null) {
-            instruments = synthesizer.getDefaultSoundbank().getInstruments();
+            instruments = sb.getInstruments();
             synthesizer.loadInstrument(instruments[0]);
         }
     }
