@@ -63,18 +63,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -90,54 +83,54 @@ import java.util.List;
 public class MidiSynth extends JPanel implements ProgramChangeHandler {
 
     /** MIDI status byte for program change messages ({@code 0xC0} base). */
-    private final static int PROGRAM = 192;
+    static final int PROGRAM = 192;
 
     /** MIDI control change number for sustain pedal. */
-    private final static int SUSTAIN = 64;
+    static final int SUSTAIN = 64;
     /** MIDI control change number for reverb depth. */
-    private final static int REVERB = 91;
+    static final int REVERB = 91;
 
     /** MIDI status byte for note-on ({@code 0x90} base). */
-    private final static  int NOTEON = 144;
+    static final int NOTEON = 144;
     /** MIDI status byte for note-off ({@code 0x80} base). */
-    private final static int NOTEOFF = 128;
+    static final int NOTEOFF = 128;
     /** Key state constant: note held (pressed). */
-    private final static int ON = 0;
+    static final int ON = 0;
     /** Key state constant: note released. */
-    private final static int OFF = 1;
+    static final int OFF = 1;
 
     /** Fill color for active white keys when not recording. */
-    private final Color jfcBlue = new Color(204, 204, 255);
+    final Color jfcBlue = new Color(204, 204, 255);
     /** Fill color for active keys while recording. */
-    private final Color pink = new Color(255, 175, 175);
+    final Color pink = new Color(255, 175, 175);
     /** Synthesizer and sequencer state. */
-    private MidiSynthModel model;
+    final MidiSynthModel model;
     /** Per-MIDI-channel UI and controller state. */
-    private ChannelData[] channels;
+    ChannelData[] channels;
     /** Currently selected channel. */
-    private ChannelData cc;
+    ChannelData cc;
 
     /** When selected, moving the mouse over keys plays them without clicking. */
-    private JCheckBox mouseOverCB = new JCheckBox("mouseOver", true);
+    final JCheckBox mouseOverCB = new JCheckBox("mouseOver", true);
     /** Sliders for velocity, channel pressure, pitch bend, and reverb. */
-    private JSlider veloS, presS, bendS, revbS;
+    JSlider veloS, presS, bendS, revbS;
     /** Channel mode toggles (solo, mono, mute; sustain reserved). */
-    private JCheckBox soloCB, monoCB, muteCB, sustCB;
+    JCheckBox soloCB, monoCB, muteCB, sustCB;
     /** All piano keys, hit-testing order (black drawn on top of white). */
-    private List<Key> keys = new ArrayList<>();
+    final List<MidiKey> keys = new ArrayList<>();
     /** White keys only, for painting order. */
-    private List<Key> whiteKeys = new ArrayList<>();
+    final List<MidiKey> whiteKeys = new ArrayList<>();
     /** Instrument picker table. */
-    private JTable table;
+    JTable table;
 
     /** Whether a recording session is in progress. */
-    private boolean record;
+    boolean record;
     /** MIDI track being recorded. */
-    private Track track;
+    Track track;
     /** Wall-clock millis when recording started (for event timestamps). */
-    private long startTime;
+    long startTime;
     /** Non-modal capture window, or {@code null} if closed. */
-    private RecordFrame recordFrame;
+    RecordFrame recordFrame;
 
 
     /** Builds the piano, controllers, and instrument table. */
@@ -153,7 +146,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
         p.setBorder(new CompoundBorder(cb,eb));
         JPanel pp = new JPanel(new BorderLayout());
         pp.setBorder(new EmptyBorder(10,20,10,5));
-        pp.add(new Piano());
+        pp.add(new PianoPanel(this));
         p.add(pp);
         p.add(new Controls());
 
@@ -189,7 +182,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
      * @param type raw status byte category (e.g. note or program change)
      * @param num  first data byte (note number or program)
      */
-    private void createShortEvent(int type, int num) {
+    void createShortEvent(int type, int num) {
         ShortMessage message = new ShortMessage();
         try {
             long millis = System.currentTimeMillis() - startTime;
@@ -226,188 +219,6 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
         cc.channel.programChange(program);
         if (record) {
             createShortEvent(PROGRAM, program);
-        }
-    }
-
-    /**
-     * Black and white keys or notes on the piano.
-     */
-    class Key extends Rectangle {
-        /** {@link #ON} or {@link #OFF}. */
-        int noteState = OFF;
-        /** MIDI note number for this key. */
-        int kNum;
-        /**
-         * @param x left
-         * @param y top
-         * @param width pixel width
-         * @param height pixel height
-         * @param num MIDI note number
-         */
-        Key(int x, int y, int width, int height, int num) {
-            super(x, y, width, height);
-            kNum = num;
-        }
-        /** @return whether the key is currently held */
-        boolean isNoteOn() {
-            return noteState == ON;
-        }
-        /** Sends note-on and optionally records it. */
-        void on() {
-            setNoteState(ON);
-            cc.channel.noteOn(kNum, cc.velocity);
-            if (record) {
-                createShortEvent(NOTEON, kNum);
-            }
-        }
-        /** Sends note-off and optionally records it. */
-        void off() {
-            setNoteState(OFF);
-            cc.channel.noteOff(kNum, cc.velocity);
-            if (record) {
-                createShortEvent(NOTEOFF, kNum);
-            }
-        }
-        /** @param state {@link #ON} or {@link #OFF} */
-        void setNoteState(int state) {
-            noteState = state;
-        }
-    }
-
-
-    /**
-     * Piano renders black &amp; white keys and plays the notes for a MIDI
-     * channel.
-     */
-    class Piano extends JPanel implements MouseListener {
-
-        /** Black keys (shorter, drawn above white keys). */
-        List<Key> blackKeys = new ArrayList<>();
-        /** Key under the mouse or last clicked; may be {@code null}. */
-        Key prevKey;
-        /** White key width and height in pixels. */
-        final int kw = 16, kh = 80;
-
-
-        /** Lays out keys for just over four octaves and attaches mouse listeners. */
-        Piano() {
-            setLayout(new BorderLayout());
-            setPreferredSize(new Dimension(42*kw, kh+1));
-            int transpose = 24;
-            int[] whiteIDs = { 0, 2, 4, 5, 7, 9, 11 };
-
-            for (int i = 0, x = 0; i < 6; i++) {
-                for (int j = 0; j < 7; j++, x += kw) {
-                    int keyNum = i * 12 + whiteIDs[j] + transpose;
-                    whiteKeys.add(new Key(x, 0, kw, kh, keyNum));
-                }
-            }
-            for (int i = 0, x = 0; i < 6; i++, x += kw) {
-                int keyNum = i * 12 + transpose;
-                blackKeys.add(new Key((x += kw)-4, 0, kw/2, kh/2, keyNum+1));
-                blackKeys.add(new Key((x += kw)-4, 0, kw/2, kh/2, keyNum+3));
-                x += kw;
-                blackKeys.add(new Key((x += kw)-4, 0, kw/2, kh/2, keyNum+6));
-                blackKeys.add(new Key((x += kw)-4, 0, kw/2, kh/2, keyNum+8));
-                blackKeys.add(new Key((x += kw)-4, 0, kw/2, kh/2, keyNum+10));
-            }
-            keys.addAll(blackKeys);
-            keys.addAll(whiteKeys);
-
-            addMouseMotionListener(new MyMouseMotionAdapter());
-            addMouseListener(this);
-        }
-
-        /** {@inheritDoc} */
-        public void mousePressed(MouseEvent e) {
-            prevKey = getKey(e.getPoint());
-            if (prevKey != null) {
-                prevKey.on();
-                repaint();
-            }
-        }
-        /** {@inheritDoc} */
-        public void mouseReleased(MouseEvent e) {
-            if (prevKey != null) {
-                prevKey.off();
-                repaint();
-            }
-        }
-        /** {@inheritDoc} */
-        public void mouseExited(MouseEvent e) {
-            if (prevKey != null) {
-                prevKey.off();
-                repaint();
-                prevKey = null;
-            }
-        }
-        /** {@inheritDoc} */
-        public void mouseClicked(MouseEvent e) { }
-        /** {@inheritDoc} */
-        public void mouseEntered(MouseEvent e) { }
-
-        /** @param point mouse position in this component
-         *  @return the topmost key containing the point, or {@code null}
-         */
-        Key getKey(Point point) {
-            for (Key key : keys) {
-                if (key.contains(point)) {
-                    return key;
-                }
-            }
-            return null;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void paint(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g;
-            Dimension d = getSize();
-
-            g2.setBackground(getBackground());
-            g2.clearRect(0, 0, d.width, d.height);
-
-            g2.setColor(Color.white);
-            g2.fillRect(0, 0, 42*kw, kh);
-
-            for (Key key : whiteKeys) {
-                if (key.isNoteOn()) {
-                    g2.setColor(record ? pink : jfcBlue);
-                    g2.fill(key);
-                }
-                g2.setColor(Color.black);
-                g2.draw(key);
-            }
-            for (Key key : blackKeys) {
-                if (key.isNoteOn()) {
-                    g2.setColor(record ? pink : jfcBlue);
-                    g2.fill(key);
-                    g2.setColor(Color.black);
-                    g2.draw(key);
-                } else {
-                    g2.setColor(Color.black);
-                    g2.fill(key);
-                }
-            }
-        }
-
-        /** Plays keys under the mouse when {@link #mouseOverCB} is selected. */
-        private class MyMouseMotionAdapter extends MouseMotionAdapter {
-            /** {@inheritDoc} */
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                if (mouseOverCB.isSelected()) {
-                    Key key = getKey(e.getPoint());
-                    if (prevKey != null && prevKey != key) {
-                        prevKey.off();
-                    }
-                    if (key != null && prevKey != key) {
-                        key.on();
-                    }
-                    prevKey = key;
-                    repaint();
-                }
-            }
         }
     }
 
@@ -588,7 +399,7 @@ public class MidiSynth extends JPanel implements ProgramChangeHandler {
                 for (ChannelData channel : channels) {
                     channel.channel.allNotesOff();
                 }
-                for (Key key : keys) {
+                for (MidiKey key : keys) {
                     key.setNoteState(OFF);
                 }
             } else if (button.getText().startsWith("Record")) {
