@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    ignore:
+      # bb4-internal dependencies are already kept current by the CI cascade
+      # (repository_dispatch on every push) and the deliberate manual release
+      # process -- Dependabot opening PRs to bump these would just be
+      # redundant noise on top of a mechanism that already works.
+      - dependency-name: "com.barrybecker4:*"
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
