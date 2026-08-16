@@ -1,6 +1,6 @@
 # bb4-sound
 
-📊 [Build status for all bb4 projects](https://github.com/bb4)
+📊 [Build status for all bb4 projects](https://github.com/bb4/.github)
 
 Library project for creating sounds, music, and speech synthesis.
 Note: Much of this code came from two sources (though extensive modifications have been made)
