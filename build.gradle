@@ -1,4 +1,4 @@
-// Copyright by Barry G. Becker, 2013 - 2017. Licensed under MIT License: http://www.opensource.org/licenses/MIT
+// Copyright by Barry G. Becker, 2013 - 2026. Licensed under MIT License: http://www.opensource.org/licenses/MIT
 
 plugins {
     id 'com.barrybecker4.bb4.scala-library' version '2.1-SNAPSHOT'
@@ -15,14 +15,14 @@ bb4 {
     mainClass.set('com.barrybecker4.sound.midi.MidiSynth')
 }
 
-// Zinc joint compilation while Java sources remain under source/ and test/
+// Keep resource-only tree on main classpath (allophones under source/)
 sourceSets {
     main {
-        scala.srcDirs = ['scala-source', 'source']
+        scala.srcDirs = ['scala-source']
         java.srcDirs = []
     }
     test {
-        scala.srcDirs = ['scala-test', 'test']
+        scala.srcDirs = ['scala-test']
         java.srcDirs = []
     }
 }
