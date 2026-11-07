@@ -15,6 +15,18 @@ bb4 {
     mainClass.set('com.barrybecker4.sound.midi.MidiSynth')
 }
 
+// Zinc joint compilation while Java sources remain under source/ and test/
+sourceSets {
+    main {
+        scala.srcDirs = ['scala-source', 'source']
+        java.srcDirs = []
+    }
+    test {
+        scala.srcDirs = ['scala-test', 'test']
+        java.srcDirs = []
+    }
+}
+
 tasks.withType(ScalaCompile).configureEach {
     scalaCompileOptions.additionalParameters += ['-deprecation', '-Wunused:imports']
 }
