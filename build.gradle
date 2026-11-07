@@ -20,6 +20,5 @@ dependencies {
 }
 
 test {
-    reports.junitXml.destination = file('build/test-results/test')
     maxParallelForks = 1
 }
