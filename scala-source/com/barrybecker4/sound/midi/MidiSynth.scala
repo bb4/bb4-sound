@@ -1,7 +1,7 @@
 package com.barrybecker4.sound.midi
 
 import java.awt.event.{WindowAdapter, WindowEvent}
-import java.awt.{Color, Dimension, Toolkit}
+import java.awt.{BorderLayout, Color, Dimension, Toolkit}
 import javax.sound.midi.{MidiEvent, ShortMessage, Track}
 import javax.swing.*
 import javax.swing.border.{BevelBorder, CompoundBorder, EmptyBorder}
