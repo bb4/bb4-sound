@@ -1,9 +1,9 @@
 // Copyright by Barry G. Becker, 2013 - 2017. Licensed under MIT License: http://www.opensource.org/licenses/MIT
 
 plugins {
-    id 'com.barrybecker4.bb4.scala-library' version '2.0.0'
-    id 'com.barrybecker4.bb4.publish' version '2.0.0'
-    id 'com.barrybecker4.bb4.application' version '2.0.0'
+    id 'com.barrybecker4.bb4.scala-library' version '2.1-SNAPSHOT'
+    id 'com.barrybecker4.bb4.publish' version '2.1-SNAPSHOT'
+    id 'com.barrybecker4.bb4.application' version '2.1-SNAPSHOT'
 }
 
 description = 'Sound and speech synthesis library'
@@ -15,8 +15,12 @@ bb4 {
     mainClass.set('com.barrybecker4.sound.midi.MidiSynth')
 }
 
+tasks.withType(ScalaCompile).configureEach {
+    scalaCompileOptions.additionalParameters += ['-deprecation', '-Wunused:imports']
+}
+
 dependencies {
-    implementation 'com.barrybecker4:bb4-common:2.0.0'
+    implementation 'com.barrybecker4:bb4-common:2.1-SNAPSHOT'
 }
 
 test {
