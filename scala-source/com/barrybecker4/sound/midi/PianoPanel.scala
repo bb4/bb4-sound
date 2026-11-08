@@ -5,6 +5,38 @@ import java.awt.{BorderLayout, Color, Dimension, Graphics, Graphics2D, Point}
 import javax.swing.JPanel
 import scala.collection.mutable.ArrayBuffer
 
+/** Black-key rectangle, independent of the synthesizer and the display. */
+private[midi] case class BlackKeyRect(x: Int, y: Int, width: Int, height: Int, note: Int)
+
+object PianoPanel {
+
+  /**
+   * Black-key rectangles for `octaves` octaves starting at MIDI note `transpose`.
+   * `x` advances an extra white-key width where the keyboard has no black key:
+   * between E and F, and between B and C on the way into the next octave.
+   */
+  private[midi] def blackKeyLeftEdges(octaves: Int, kw: Int, transpose: Int, kh: Int = 80): Seq[BlackKeyRect] = {
+    val keys = ArrayBuffer.empty[BlackKeyRect]
+    var x = 0
+    for (i <- 0 until octaves) {
+      val keyNum = i * 12 + transpose
+      x += kw
+      keys += BlackKeyRect(x - 4, 0, kw / 2, kh / 2, keyNum + 1)
+      x += kw
+      keys += BlackKeyRect(x - 4, 0, kw / 2, kh / 2, keyNum + 3)
+      x += kw // no black key between E and F
+      x += kw
+      keys += BlackKeyRect(x - 4, 0, kw / 2, kh / 2, keyNum + 6)
+      x += kw
+      keys += BlackKeyRect(x - 4, 0, kw / 2, kh / 2, keyNum + 8)
+      x += kw
+      keys += BlackKeyRect(x - 4, 0, kw / 2, kh / 2, keyNum + 10)
+      x += kw // no black key between B and C
+    }
+    keys.toList
+  }
+}
+
 /** Piano renders black and white keys and plays the notes for a MIDI channel. */
 class PianoPanel(synth: MidiSynth) extends JPanel(BorderLayout()), MouseListener {
 
@@ -25,19 +57,8 @@ class PianoPanel(synth: MidiSynth) extends JPanel(BorderLayout()), MouseListener
       x += kw
     }
 
-    x = 0
-    for (i <- 0 until 6) {
-      x += kw
-      val keyNum = i * 12 + transpose
-      blackKeys += new MidiKey(synth, x - 4, 0, kw / 2, kh / 2, keyNum + 1)
-      x += kw
-      blackKeys += new MidiKey(synth, x - 4, 0, kw / 2, kh / 2, keyNum + 3)
-      x += kw
-      blackKeys += new MidiKey(synth, x - 4, 0, kw / 2, kh / 2, keyNum + 6)
-      x += kw
-      blackKeys += new MidiKey(synth, x - 4, 0, kw / 2, kh / 2, keyNum + 8)
-      x += kw
-      blackKeys += new MidiKey(synth, x - 4, 0, kw / 2, kh / 2, keyNum + 10)
+    for (rect <- PianoPanel.blackKeyLeftEdges(octaves = 6, kw = kw, transpose = transpose, kh = kh)) {
+      blackKeys += new MidiKey(synth, rect.x, rect.y, rect.width, rect.height, rect.note)
     }
 
     synth.keys ++= blackKeys
