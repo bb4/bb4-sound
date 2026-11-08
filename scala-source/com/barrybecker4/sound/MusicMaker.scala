@@ -8,10 +8,21 @@ import javax.sound.midi.*
  *
  * @author Barry Becker
  */
-class MusicMaker private[sound] (injectedChannels: Array[MidiChannel]) {
+class MusicMaker private[sound] (
+    injectedChannels: Array[MidiChannel],
+    injectedSynthesizer: Synthesizer
+) extends AutoCloseable {
 
   /** Opens the platform synthesizer when one is available. */
-  def this() = this(null: Array[MidiChannel])
+  def this() = this(null: Array[MidiChannel], null: Synthesizer)
+
+  /** Test seam: inject MIDI channels without opening a real synthesizer. */
+  private[sound] def this(injectedChannels: Array[MidiChannel]) =
+    this(injectedChannels, null: Synthesizer)
+
+  /** Test seam: inject a synthesizer without opening the platform device. */
+  private[sound] def this(injectedSynthesizer: Synthesizer) =
+    this(null: Array[MidiChannel], injectedSynthesizer)
 
   private val pitchBendCenter = 8192
 
@@ -21,7 +32,9 @@ class MusicMaker private[sound] (injectedChannels: Array[MidiChannel]) {
   private var channel: MidiChannel = null
   private val channelsInjected = injectedChannels != null
 
-  if (channelsInjected) {
+  if (injectedSynthesizer != null) {
+    synthesizer = injectedSynthesizer
+  } else if (channelsInjected) {
     midiChannels = injectedChannels
     channel = injectedChannels.find(_ != null).orNull
   } else {
@@ -65,11 +78,17 @@ class MusicMaker private[sound] (injectedChannels: Array[MidiChannel]) {
     }
   }
 
+  /** Release the synthesizer and drop channel references so later calls no-op. */
+  override def close(): Unit = closeSynthesizerQuietly()
+
   private def closeSynthesizerQuietly(): Unit = {
     if (synthesizer != null) {
       synthesizer.close()
       synthesizer = null
     }
+    midiChannels = null
+    channel = null
+    instruments = null
   }
 
   private def configureChannel(ch: MidiChannel): Unit = {
