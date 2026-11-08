@@ -1,4 +1,8 @@
 package com.barrybecker4.sound.midi
+/*
+ * Extracted from the Sun Microsystems MidiSynth demo.
+ * See MidiSynth.scala for the original copyright notice and license terms.
+ */
 
 import java.awt.Rectangle
 
