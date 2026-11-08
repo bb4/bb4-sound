@@ -3,7 +3,7 @@ package com.barrybecker4.sound.midi
 import java.awt.Rectangle
 
 /** Black or white piano key that triggers MIDI note on/off. */
-class MidiKey(synth: MidiSynth, x: Int, y: Int, width: Int, height: Int, val kNum: Int)
+private[midi] class MidiKey(synth: MidiSynth, x: Int, y: Int, width: Int, height: Int, val kNum: Int)
     extends Rectangle(x, y, width, height) {
 
   var noteState: Int = MidiSynth.OFF

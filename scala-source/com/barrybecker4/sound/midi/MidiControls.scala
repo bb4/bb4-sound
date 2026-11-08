@@ -7,7 +7,7 @@ import javax.swing.border.{EmptyBorder, EtchedBorder, TitledBorder}
 import javax.swing.event.{ChangeEvent, ChangeListener}
 
 /** A collection of MIDI controllers for [[MidiSynth]]. */
-class MidiControls(synth: MidiSynth)
+private[midi] class MidiControls(synth: MidiSynth)
     extends JPanel(),
       ActionListener,
       ChangeListener,

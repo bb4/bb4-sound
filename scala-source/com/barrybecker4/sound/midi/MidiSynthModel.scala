@@ -3,35 +3,35 @@ package com.barrybecker4.sound.midi
 import javax.sound.midi.*
 
 /** MIDI synthesizer and sequencer state for [[MidiSynth]]. */
-class MidiSynthModel {
+class MidiSynthModel private[midi] {
 
   private var sequencer: Sequencer = null
   private var sequence: Sequence = null
   private var synthesizer: Synthesizer = null
   private var instruments: Array[Instrument] = null
 
-  def getMidiChannels: Array[MidiChannel] = synthesizer.getChannels
+  private[midi] def getMidiChannels: Array[MidiChannel] = synthesizer.getChannels
 
-  def getResolution: Int = sequence.getResolution
+  private[midi] def getResolution: Int = sequence.getResolution
 
-  def hasInstruments: Boolean = instruments != null
+  private[midi] def hasInstruments: Boolean = instruments != null
 
-  def getInstrument(i: Int): Instrument = instruments(i)
+  private[midi] def getInstrument(i: Int): Instrument = instruments(i)
 
-  def loadInstrument(program: Int): Unit =
+  private[midi] def loadInstrument(program: Int): Unit =
     synthesizer.loadInstrument(getInstrument(program))
 
-  def getSequencer: Sequencer = sequencer
+  private[midi] def getSequencer: Sequencer = sequencer
 
-  def getSequence: Sequence = sequence
+  private[midi] def getSequence: Sequence = sequence
 
-  def addSequence(listener: MetaEventListener): Unit = {
+  private[midi] def addSequence(listener: MetaEventListener): Unit = {
     sequencer.addMetaEventListener(listener)
     try sequence = new Sequence(Sequence.PPQ, 10)
     catch case ex: Exception => ex.printStackTrace()
   }
 
-  def open(): Unit = {
+  private[midi] def open(): Unit = {
     try
       if (synthesizer == null) {
         synthesizer = MidiSystem.getSynthesizer

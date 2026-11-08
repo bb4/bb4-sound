@@ -10,14 +10,14 @@ import java.net.URL
 import java.util.Locale
 import javax.sound.sampled.*
 
-object PhoneToken {
-  private[speech] val RESOURCE_PATH = "com/barrybecker4/sound/allophones/"
-  private[speech] val COMMA_PAUSE = 200
-  private[speech] val PERIOD_PAUSE = 680
+private[speech] object PhoneToken {
+  val RESOURCE_PATH = "com/barrybecker4/sound/allophones/"
+  val COMMA_PAUSE = 200
+  val PERIOD_PAUSE = 680
   val MAX_MERGE_COUNT: Int = 1000
   /** Converted allophones are 16-bit big-endian mono PCM. `MAX_MERGE_COUNT` is a whole number of these frames. */
   private val PcmFrameBytes = 2
-  private[speech] val DELAY_BETWEEN_WORDS = 200
+  val DELAY_BETWEEN_WORDS = 200
 
   /**
    * Underscore filenames that are byte-identical to the lowercase recording.
@@ -80,7 +80,7 @@ object PhoneToken {
    * The stem must match exactly, ignoring case, so `a` finds `a.au` and `AY` finds `ay.au`.
    * An underscore is part of the stem (`GG_` is not `gg`) except for the legacy aliases above.
    */
-  private[speech] def allophoneResource(token: String): Option[String] = {
+  def allophoneResource(token: String): Option[String] = {
     if (token == null || token.isEmpty) None
     else {
       val folded = token.toLowerCase(Locale.ROOT)
@@ -92,7 +92,7 @@ object PhoneToken {
   }
 }
 
-class PhoneToken private[speech] (
+private[speech] class PhoneToken(
   private val phoneToken: String,
   private val shared: SharedSampleLine
 ) {

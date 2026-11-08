@@ -6,7 +6,7 @@ import javax.swing.ScrollPaneConstants
 import javax.swing.table.AbstractTableModel
 
 /** Table for 128 general MIDI melody instruments. */
-class InstrumentsTable(model: MidiSynthModel, pch: ProgramChangeHandler) extends JPanel(BorderLayout()) {
+private[midi] class InstrumentsTable(model: MidiSynthModel, pch: ProgramChangeHandler) extends JPanel(BorderLayout()) {
 
   val table: JTable = {
     val names = Array(
@@ -59,6 +59,6 @@ class InstrumentsTable(model: MidiSynthModel, pch: ProgramChangeHandler) extends
   override def getMaximumSize: Dimension = new Dimension(800, 170)
 }
 
-object InstrumentsTable {
+private[midi] object InstrumentsTable {
   final val NUM_ROWS: Int = 8
 }
