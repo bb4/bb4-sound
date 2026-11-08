@@ -3,6 +3,7 @@ package com.barrybecker4.sound
 import org.scalatest.funsuite.AnyFunSuite
 
 import java.util.concurrent.{CountDownLatch, TimeUnit}
+import java.util.concurrent.atomic.AtomicInteger
 import javax.sound.midi.MidiChannel
 import scala.collection.mutable.ListBuffer
 
@@ -54,6 +55,28 @@ class MusicMakerPlayNoteSuite extends AnyFunSuite {
       override def noteOn(noteNumber: Int, velocity: Int): Unit = onNoteOn(noteNumber)
       override def noteOff(noteNumber: Int, velocity: Int): Unit = onNoteOff(noteNumber)
       override def noteOff(noteNumber: Int): Unit = onNoteOff(noteNumber)
+    val noteOns = ListBuffer.empty[Int]
+    val noteOffs = ListBuffer.empty[Int]
+    val music = new MusicMaker(Array(fakeChannel(noteOns, noteOffs)))
+
+    music.playNote(60, duration = 20, velocity = 80)
+
+    assertResult(Seq(60))(noteOns.toSeq)
+    assertResult(Seq(60))(noteOffs.toSeq)
+  }
+
+  private def fakeChannel(
+      noteOns: ListBuffer[Int],
+      noteOffs: ListBuffer[Int],
+      noteOnLatch: Option[CountDownLatch] = None
+  ): MidiChannel =
+    new MidiChannel {
+      override def noteOn(noteNumber: Int, velocity: Int): Unit = {
+        noteOns += noteNumber
+        noteOnLatch.foreach(_.countDown())
+      }
+      override def noteOff(noteNumber: Int, velocity: Int): Unit = noteOffs += noteNumber
+      override def noteOff(noteNumber: Int): Unit = noteOffs += noteNumber
       override def setPolyPressure(noteNumber: Int, pressure: Int): Unit = ()
       override def getPolyPressure(noteNumber: Int): Int = 0
       override def setChannelPressure(pressure: Int): Unit = ()
