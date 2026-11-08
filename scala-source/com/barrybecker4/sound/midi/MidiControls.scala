@@ -17,8 +17,6 @@ private[midi] class MidiControls(synth: MidiSynth)
       ChangeListener,
       ItemListener {
 
-  private var recordB: JButton = null
-
   {
     setLayout(new BoxLayout(this, BoxLayout.Y_AXIS))
     setBorder(new EmptyBorder(5, 10, 5, 10))
@@ -47,12 +45,13 @@ private[midi] class MidiControls(synth: MidiSynth)
     synth.muteCB = createCheckBox("Mute", p)
     synth.soloCB = createCheckBox("Solo", p)
     synth.monoCB = createCheckBox("Mono", p)
+    synth.sustCB = createCheckBox("Sustain", p)
 
     createButton("All Notes Off", p)
     p.add(Box.createHorizontalStrut(10))
     p.add(synth.mouseOverCB)
     p.add(Box.createHorizontalStrut(10))
-    recordB = createButton("Record...", p)
+    createButton("Record...", p)
     add(p)
   }
 
@@ -130,6 +129,7 @@ private[midi] class MidiControls(synth: MidiSynth)
     synth.soloCB.setSelected(cc.solo)
     synth.monoCB.setSelected(cc.mono)
     synth.muteCB.setSelected(cc.mute)
+    synth.sustCB.setSelected(cc.sustain)
     val sliders = Array(synth.veloS, synth.presS, synth.bendS, synth.revbS)
     val values = Array(cc.velocity, cc.pressure, cc.bend, cc.reverb)
     for (i <- sliders.indices) {
