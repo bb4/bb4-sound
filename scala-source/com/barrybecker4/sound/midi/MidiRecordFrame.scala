@@ -3,7 +3,7 @@ package com.barrybecker4.sound.midi
 import java.awt.event.{ActionEvent, ActionListener, WindowAdapter, WindowEvent}
 import java.awt.{Font, Toolkit}
 import java.io.{File, IOException}
-import javax.sound.midi.{MetaEventListener, MetaMessage, MidiSystem}
+import javax.sound.midi.{MetaEventListener, MetaMessage, MidiSystem, Sequence, Sequencer}
 import javax.swing._
 import javax.swing.border.{CompoundBorder, EmptyBorder, EtchedBorder}
 import javax.swing.event.TableModelEvent
@@ -123,9 +123,7 @@ private[midi] class MidiRecordFrame(synth: MidiSynth)
     if (playB.getText.startsWith("Play")) startPlayback() else stopPlayback()
 
   private def startPlayback(): Unit = {
-    try
-      synth.model.getSequencer.open()
-      synth.model.getSequencer.setSequence(synth.model.getSequence)
+    try MidiRecordFrame.preparePlayback(synth.model.getSequencer, synth.model.getSequence)
     catch case ex: Exception => ex.printStackTrace()
     synth.model.getSequencer.start()
     playB.setText("Stop")
@@ -168,5 +166,15 @@ private[midi] class MidiRecordFrame(synth: MidiSynth)
     } catch {
       case ex: Exception => ex.printStackTrace()
     }
+  }
+}
+
+private[midi] object MidiRecordFrame {
+
+  /** Open the sequencer, load `sequence`, and rewind so Play always starts from the beginning. */
+  private[midi] def preparePlayback(sequencer: Sequencer, sequence: Sequence): Unit = {
+    sequencer.open()
+    sequencer.setSequence(sequence)
+    sequencer.setTickPosition(0)
   }
 }
