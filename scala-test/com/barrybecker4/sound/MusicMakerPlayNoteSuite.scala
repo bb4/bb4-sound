@@ -2,7 +2,8 @@ package com.barrybecker4.sound
 
 import org.scalatest.funsuite.AnyFunSuite
 
-import java.util.concurrent.{CountDownLatch, TimeUnit}
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import javax.sound.midi.MidiChannel
 import scala.collection.mutable.ListBuffer
@@ -10,51 +11,6 @@ import scala.collection.mutable.ListBuffer
 class MusicMakerPlayNoteSuite extends AnyFunSuite {
 
   test("playNote sends noteOff after a normal sleep") {
-    val ons = ListBuffer.empty[Int]
-    val offs = ListBuffer.empty[Int]
-    val music = new MusicMaker(Array(fakeChannel(
-      onNoteOn = ons += _,
-      onNoteOff = offs += _
-    )))
-
-    music.playNote(60, duration = 10, velocity = 80)
-
-    assertResult(Seq(60))(ons.toSeq)
-    assertResult(Seq(60))(offs.toSeq)
-  }
-
-  test("interrupted playNote still sends noteOff and restores interrupt") {
-    val ons = ListBuffer.empty[Int]
-    val offs = ListBuffer.empty[Int]
-    val onLatch = new CountDownLatch(1)
-    val music = new MusicMaker(Array(fakeChannel(
-      onNoteOn = n => {
-        ons += n
-        onLatch.countDown()
-      },
-      onNoteOff = offs += _
-    )))
-
-    val t = new Thread(() => music.playNote(60, duration = 5_000, velocity = 80))
-    t.start()
-    assert(onLatch.await(1, TimeUnit.SECONDS), "noteOn was never called")
-    t.interrupt()
-    t.join(1_000)
-
-    assert(!t.isAlive)
-    assert(t.isInterrupted)
-    assertResult(Seq(60))(ons.toSeq)
-    assertResult(Seq(60))(offs.toSeq)
-  }
-
-  private def fakeChannel(
-      onNoteOn: Int => Unit,
-      onNoteOff: Int => Unit
-  ): MidiChannel =
-    new MidiChannel {
-      override def noteOn(noteNumber: Int, velocity: Int): Unit = onNoteOn(noteNumber)
-      override def noteOff(noteNumber: Int, velocity: Int): Unit = onNoteOff(noteNumber)
-      override def noteOff(noteNumber: Int): Unit = onNoteOff(noteNumber)
     val noteOns = ListBuffer.empty[Int]
     val noteOffs = ListBuffer.empty[Int]
     val music = new MusicMaker(Array(fakeChannel(noteOns, noteOffs)))
@@ -63,6 +19,29 @@ class MusicMakerPlayNoteSuite extends AnyFunSuite {
 
     assertResult(Seq(60))(noteOns.toSeq)
     assertResult(Seq(60))(noteOffs.toSeq)
+  }
+
+  test("interrupted playNote still sends noteOff and restores interrupt flag") {
+    val noteOns = ListBuffer.empty[Int]
+    val noteOffs = ListBuffer.empty[Int]
+    val noteOnLatch = new CountDownLatch(1)
+    val music = new MusicMaker(Array(fakeChannel(noteOns, noteOffs, Some(noteOnLatch))))
+    val interruptedAfter = new AtomicInteger(0)
+
+    val t = new Thread(() => {
+      music.playNote(60, duration = 5_000, velocity = 80)
+      if (Thread.currentThread().isInterrupted) interruptedAfter.set(1)
+    })
+    t.start()
+
+    assert(noteOnLatch.await(1, TimeUnit.SECONDS), "noteOn should happen before interrupt")
+    t.interrupt()
+    t.join(1_000)
+    assert(!t.isAlive, "playNote thread should finish after interrupt")
+
+    assertResult(Seq(60))(noteOns.toSeq)
+    assertResult(Seq(60))(noteOffs.toSeq)
+    assertResult(1)(interruptedAfter.get)
   }
 
   private def fakeChannel(
