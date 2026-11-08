@@ -8,14 +8,14 @@ import scala.collection.mutable.ArrayBuffer
 /** Black-key rectangle, independent of the synthesizer and the display. */
 private[midi] case class BlackKeyRect(x: Int, y: Int, width: Int, height: Int, note: Int)
 
-object PianoPanel {
+private[midi] object PianoPanel {
 
   /**
    * Black-key rectangles for `octaves` octaves starting at MIDI note `transpose`.
    * `x` advances an extra white-key width where the keyboard has no black key:
    * between E and F, and between B and C on the way into the next octave.
    */
-  private[midi] def blackKeyLeftEdges(octaves: Int, kw: Int, transpose: Int, kh: Int = 80): Seq[BlackKeyRect] = {
+  def blackKeyLeftEdges(octaves: Int, kw: Int, transpose: Int, kh: Int = 80): Seq[BlackKeyRect] = {
     val keys = ArrayBuffer.empty[BlackKeyRect]
     var x = 0
     for (i <- 0 until octaves) {
@@ -38,7 +38,7 @@ object PianoPanel {
 }
 
 /** Piano renders black and white keys and plays the notes for a MIDI channel. */
-class PianoPanel(synth: MidiSynth) extends JPanel(BorderLayout()), MouseListener {
+private[midi] class PianoPanel(synth: MidiSynth) extends JPanel(BorderLayout()), MouseListener {
 
   private val blackKeys = ArrayBuffer.empty[MidiKey]
   private var prevKey: MidiKey = null

@@ -11,7 +11,7 @@ import javax.swing.table.AbstractTableModel
 import scala.collection.mutable.ArrayBuffer
 
 /** A frame that allows for MIDI capture and saving the captured data. */
-class MidiRecordFrame(synth: MidiSynth)
+private[midi] class MidiRecordFrame(synth: MidiSynth)
     extends JFrame("Midi Capture"),
       ActionListener,
       MetaEventListener {

@@ -5,10 +5,8 @@ package com.barrybecker4.sound.speech
 
 import javax.sound.sampled.AudioFormat
 
-import scala.jdk.CollectionConverters.*
-
 /** Represents a single phonetic word. */
-class PhoneWord private[speech] (
+private[speech] class PhoneWord(
   phoneWord: String,
   lineFactory: AudioFormat => SampleLine = SampleLine.openSourceDataLine
 ) {
@@ -18,7 +16,7 @@ class PhoneWord private[speech] (
     var previousSound: Array[Byte] = null
     var lastToken: PhoneToken = null
     try {
-      for (t <- PhoneWord.splitAllophones(phoneWord).asScala) {
+      for (t <- PhoneWord.splitAllophones(phoneWord)) {
         lastToken = new PhoneToken(t, shared)
         previousSound = lastToken.process(previousSound)
       }
@@ -30,11 +28,11 @@ class PhoneWord private[speech] (
   }
 }
 
-object PhoneWord {
+private[speech] object PhoneWord {
   def apply(word: String): PhoneWord = new PhoneWord(word)
 
   /** Split a word into allophone tokens (delimiter `|`). Empty or null input yields an empty list. */
-  def splitAllophones(word: String): java.util.List[String] =
-    if (word == null || word.isEmpty) java.util.List.of()
-    else java.util.Collections.unmodifiableList(word.split("\\|", -1).toList.asJava)
+  def splitAllophones(word: String): List[String] =
+    if (word == null || word.isEmpty) Nil
+    else word.split("\\|", -1).toList
 }

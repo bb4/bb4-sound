@@ -14,31 +14,31 @@ import scala.collection.mutable
  */
 class MidiSynth extends JPanel(BorderLayout()), ProgramChangeHandler {
 
-  val model = new MidiSynthModel
-  var channels: Array[ChannelData] = null
-  var cc: ChannelData = null
+  private[midi] val model = new MidiSynthModel
+  private[midi] var channels: Array[ChannelData] = null
+  private[midi] var cc: ChannelData = null
 
-  val mouseOverCB = new JCheckBox("mouseOver", true)
-  var veloS: JSlider = null
-  var presS: JSlider = null
-  var bendS: JSlider = null
-  var revbS: JSlider = null
-  var soloCB: JCheckBox = null
-  var monoCB: JCheckBox = null
-  var muteCB: JCheckBox = null
-  var sustCB: JCheckBox = null
+  private[midi] val mouseOverCB = new JCheckBox("mouseOver", true)
+  private[midi] var veloS: JSlider = null
+  private[midi] var presS: JSlider = null
+  private[midi] var bendS: JSlider = null
+  private[midi] var revbS: JSlider = null
+  private[midi] var soloCB: JCheckBox = null
+  private[midi] var monoCB: JCheckBox = null
+  private[midi] var muteCB: JCheckBox = null
+  private[midi] var sustCB: JCheckBox = null
 
-  val keys = mutable.ArrayBuffer.empty[MidiKey]
-  val whiteKeys = mutable.ArrayBuffer.empty[MidiKey]
-  var table: JTable = null
+  private[midi] val keys = mutable.ArrayBuffer.empty[MidiKey]
+  private[midi] val whiteKeys = mutable.ArrayBuffer.empty[MidiKey]
+  private[midi] var table: JTable = null
 
-  var record = false
-  var track: Track = null
-  var startTime = 0L
-  var recordFrame: MidiRecordFrame = null
+  private[midi] var record = false
+  private[midi] var track: Track = null
+  private[midi] var startTime = 0L
+  private[midi] var recordFrame: MidiRecordFrame = null
 
-  val jfcBlue = new Color(204, 204, 255)
-  val pink = new Color(255, 175, 175)
+  private[midi] val jfcBlue = new Color(204, 204, 255)
+  private[midi] val pink = new Color(255, 175, 175)
 
   {
     val p = new JPanel()
@@ -71,7 +71,7 @@ class MidiSynth extends JPanel(BorderLayout()), ProgramChangeHandler {
     lsm.setSelectionInterval(0, 0)
   }
 
-  def createShortEvent(`type`: Int, num: Int): Unit = {
+  private[midi] def createShortEvent(`type`: Int, num: Int): Unit = {
     val message = new ShortMessage()
     try
       val millis = System.currentTimeMillis() - startTime

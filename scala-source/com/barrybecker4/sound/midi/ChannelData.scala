@@ -3,7 +3,7 @@ package com.barrybecker4.sound.midi
 import javax.sound.midi.MidiChannel
 
 /** Stores MidiChannel information and per-channel controller UI state. */
-class ChannelData(val channel: MidiChannel, val num: Int) {
+private[midi] class ChannelData(val channel: MidiChannel, val num: Int) {
   var solo = false
   var mono = false
   var mute = false
