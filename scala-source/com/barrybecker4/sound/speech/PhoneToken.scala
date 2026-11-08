@@ -7,7 +7,8 @@ import com.barrybecker4.common.concurrency.ThreadUtil
 import com.barrybecker4.common.util.FileUtil
 
 import java.net.URL
-import javax.sound.sampled.{AudioFormat, AudioInputStream, AudioSystem}
+import java.util.Locale
+import javax.sound.sampled.*
 
 object PhoneToken {
   private[speech] val RESOURCE_PATH = "com/barrybecker4/sound/allophones/"
@@ -15,6 +16,26 @@ object PhoneToken {
   private[speech] val PERIOD_PAUSE = 680
   val MAX_MERGE_COUNT: Int = 1000
   private[speech] val DELAY_BETWEEN_WORDS = 200
+
+  /**
+   * Underscore filenames that are byte-identical to the lowercase recording.
+   * The case fold does not strip underscores; these spellings are accepted explicitly.
+   */
+  private val LegacyAliasStem: Map[String, String] = Map(
+    "aa_" -> "aa",
+    "ay_" -> "ay",
+    "d_" -> "d",
+    "gg_" -> "gg",
+    "ggg_" -> "ggg",
+    "k_" -> "k",
+    "l_" -> "l",
+    "ouu_" -> "ouu",
+    "p_" -> "p",
+    "t_" -> "t",
+    "u_" -> "u",
+    "w_" -> "w",
+    "y_" -> "y"
+  )
 
   def computeMergeCount(previousSound: Array[Byte], thisSound: Array[Byte], maxMergeThreshold: Int): Int =
     if (previousSound.length >= maxMergeThreshold && thisSound.length >= maxMergeThreshold) maxMergeThreshold
@@ -34,6 +55,22 @@ object PhoneToken {
     System.arraycopy(thisSound, mergeCount, newSound, 0, newSound.length)
     newSound
   }
+
+  /**
+   * Classpath path of the allophone for `token`.
+   * The stem must match exactly, ignoring case, so `a` finds `a.au` and `AY` finds `ay.au`.
+   * An underscore is part of the stem (`GG_` is not `gg`) except for the legacy aliases above.
+   */
+  private[speech] def allophoneResource(token: String): Option[String] = {
+    if (token == null || token.isEmpty) None
+    else {
+      val folded = token.toLowerCase(Locale.ROOT)
+      val stem = LegacyAliasStem.getOrElse(folded, folded)
+      val loader = Option(Thread.currentThread.getContextClassLoader).getOrElse(classOf[PhoneToken].getClassLoader)
+      val candidates = List(stem, stem.toUpperCase(Locale.ROOT)).distinct
+      candidates.iterator.map(name => RESOURCE_PATH + name + ".au").find(path => loader.getResource(path) != null)
+    }
+  }
 }
 
 class PhoneToken private[speech] (
@@ -45,7 +82,8 @@ class PhoneToken private[speech] (
 
   def process(previousSound: Array[Byte]): Array[Byte] = {
     if (!pauseForPunctuation()) {
-      val phoneFile = PhoneToken.RESOURCE_PATH + phoneToken + ".au"
+      val phoneFile = PhoneToken.allophoneResource(phoneToken)
+        .getOrElse(PhoneToken.RESOURCE_PATH + phoneToken + ".au")
       val thisSound = getSound(phoneFile)
       assert(thisSound.length > 0, "Invalid sound file: " + phoneFile)
       sayPhoneToken(previousSound, thisSound)
