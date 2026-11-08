@@ -17,6 +17,7 @@ class ChannelDataSuite extends AnyFunSuite {
   private def fakeChannel(): MidiChannel =
     new MidiChannel {
       override def noteOn(noteNumber: Int, velocity: Int): Unit = ()
+      override def allNotesOff(): Unit = ()
       override def noteOff(noteNumber: Int, velocity: Int): Unit = ()
       override def noteOff(noteNumber: Int): Unit = ()
       override def setPolyPressure(noteNumber: Int, pressure: Int): Unit = ()
@@ -31,7 +32,6 @@ class ChannelDataSuite extends AnyFunSuite {
       override def setPitchBend(bend: Int): Unit = ()
       override def getPitchBend: Int = 0
       override def resetAllControllers(): Unit = ()
-      override def allNotesOff(): Unit = ()
       override def allSoundOff(): Unit = ()
       override def localControl(on: Boolean): Boolean = false
       override def setMono(on: Boolean): Unit = ()
