@@ -132,6 +132,7 @@ private[midi] class MidiControls(synth: MidiSynth)
       val tb = sliders(i).getBorder.asInstanceOf[TitledBorder]
       val s = tb.getTitle
       tb.setTitle(s.substring(0, s.indexOf('=') + 1) + values(i))
+      sliders(i).setValue(values(i))
       sliders(i).repaint()
     }
   }
