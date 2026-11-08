@@ -3,22 +3,30 @@
  */
 package com.barrybecker4.sound.speech
 
+import javax.sound.sampled.AudioFormat
+
 import scala.jdk.CollectionConverters.*
 
 /** Represents a single phonetic word. */
-class PhoneWord private (phoneWord: String) {
+class PhoneWord private[speech] (
+  phoneWord: String,
+  lineFactory: AudioFormat => SampleLine = SampleLine.openSourceDataLine
+) {
 
   def say(): Unit = {
+    val shared = new SharedSampleLine(lineFactory)
     var previousSound: Array[Byte] = null
     var lastToken: PhoneToken = null
-    for (t <- PhoneWord.splitAllophones(phoneWord).asScala) {
-      lastToken = new PhoneToken(t)
-      previousSound = lastToken.process(previousSound)
-    }
-    if (lastToken != null) {
-      lastToken.playSound(previousSound)
-      lastToken.drain()
-    }
+    try {
+      for (t <- PhoneWord.splitAllophones(phoneWord).asScala) {
+        lastToken = new PhoneToken(t, shared)
+        previousSound = lastToken.process(previousSound)
+      }
+      if (lastToken != null) {
+        lastToken.playSound(previousSound)
+        lastToken.drain()
+      }
+    } finally shared.close()
   }
 }
 

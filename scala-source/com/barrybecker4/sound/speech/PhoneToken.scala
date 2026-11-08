@@ -7,7 +7,7 @@ import com.barrybecker4.common.concurrency.ThreadUtil
 import com.barrybecker4.common.util.FileUtil
 
 import java.net.URL
-import javax.sound.sampled.*
+import javax.sound.sampled.{AudioFormat, AudioInputStream, AudioSystem}
 
 object PhoneToken {
   private[speech] val RESOURCE_PATH = "com/barrybecker4/sound/allophones/"
@@ -36,9 +36,12 @@ object PhoneToken {
   }
 }
 
-class PhoneToken(private val phoneToken: String) {
-
-  private var line: SourceDataLine = null
+class PhoneToken private[speech] (
+  private val phoneToken: String,
+  private val shared: SharedSampleLine
+) {
+  def this(phoneToken: String) =
+    this(phoneToken, new SharedSampleLine(SampleLine.openSourceDataLine))
 
   def process(previousSound: Array[Byte]): Array[Byte] = {
     if (!pauseForPunctuation()) {
@@ -50,19 +53,20 @@ class PhoneToken(private val phoneToken: String) {
   }
 
   def drain(): Unit = {
-    if (line != null) {
-      line.drain()
-      line.flush()
+    if (shared.hasLine) {
+      shared.drainAndFlush()
       ThreadUtil.sleep(100)
     }
+    shared.close()
     ThreadUtil.sleep(PhoneToken.DELAY_BETWEEN_WORDS)
   }
 
   def playSound(data: Array[Byte]): Unit = {
     if (data == null || isPunctuation) return
-    if (line == null) throw new IllegalArgumentException("Problem processing " + phoneToken)
+    val playback = shared.current
+    if (playback == null) throw new IllegalArgumentException("Problem processing " + phoneToken)
     if (data.length > 0) {
-      line.write(data, 0, data.length)
+      playback.write(data, 0, data.length)
       ThreadUtil.sleep(100)
     }
   }
@@ -92,8 +96,8 @@ class PhoneToken(private val phoneToken: String) {
       val stream = openPcmStream(url)
       try {
         val format = stream.getFormat
-        if (line == null) line = createDataLine(format)
-        readFirstSampleBuffer(stream, format)
+        val playback = shared.acquire(format)
+        readFirstSampleBuffer(stream, format, playback)
       } finally {
         stream.close()
       }
@@ -114,9 +118,13 @@ class PhoneToken(private val phoneToken: String) {
     } else stream
   }
 
-  private def readFirstSampleBuffer(stream: AudioInputStream, format: AudioFormat): Array[Byte] = {
+  private def readFirstSampleBuffer(
+    stream: AudioInputStream,
+    format: AudioFormat,
+    playback: SampleLine
+  ): Array[Byte] = {
     val frameSizeInBytes = format.getFrameSize
-    val bufferLengthInFrames = line.getBufferSize >> 3
+    val bufferLengthInFrames = playback.getBufferSize >> 3
     val bufferLengthInBytes = bufferLengthInFrames * frameSizeInBytes
     val data = new Array[Byte](bufferLengthInBytes)
     val numBytesRead = stream.read(data)
@@ -138,15 +146,4 @@ class PhoneToken(private val phoneToken: String) {
       format.getFrameRate,
       true
     )
-
-  private def createDataLine(format: AudioFormat): SourceDataLine = {
-    val outInfo = new DataLine.Info(classOf[SourceDataLine], format)
-    if (!AudioSystem.isLineSupported(outInfo)) {
-      throw new Exception("Line matching " + outInfo + " not supported.")
-    }
-    val dataLine = AudioSystem.getLine(outInfo).asInstanceOf[SourceDataLine]
-    dataLine.open(format, 50000)
-    dataLine.start()
-    dataLine
-  }
 }
