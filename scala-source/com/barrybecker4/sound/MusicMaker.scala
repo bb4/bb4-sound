@@ -134,13 +134,16 @@ class MusicMaker private[sound] (injectedChannels: Array[MidiChannel]) {
       System.out.println("note needs to be in the range 0-127 it is " + n)
       n = 127
     }
+    var started = false
     try {
       if (!isReady) return
       channel.noteOn(n, velocity)
+      started = true
       Thread.sleep(duration)
-      channel.noteOff(n, velocity)
     } catch {
       case _: InterruptedException => Thread.currentThread().interrupt()
+    } finally {
+      if (started) channel.noteOff(n, velocity)
     }
   }
 
