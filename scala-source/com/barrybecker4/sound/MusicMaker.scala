@@ -8,7 +8,10 @@ import javax.sound.midi.*
  *
  * @author Barry Becker
  */
-class MusicMaker {
+class MusicMaker private[sound] (injectedChannels: Array[MidiChannel]) {
+
+  /** Opens the platform synthesizer when one is available. */
+  def this() = this(null: Array[MidiChannel])
 
   private val pitchBendCenter = 8192
 
@@ -16,8 +19,14 @@ class MusicMaker {
   private var instruments: Instruments = null
   private var midiChannels: Array[MidiChannel] = null
   private var channel: MidiChannel = null
+  private val channelsInjected = injectedChannels != null
 
-  initSynthesizer()
+  if (channelsInjected) {
+    midiChannels = injectedChannels
+    channel = injectedChannels.find(_ != null).orNull
+  } else {
+    initSynthesizer()
+  }
 
   private def initSynthesizer(): Unit = {
     if (!openSynthesizerIfAvailable()) return
@@ -74,7 +83,7 @@ class MusicMaker {
   /** @return instruments from the default soundbank, or null if none could be loaded */
   def getInstruments: Instruments = instruments
 
-  private def isReady: Boolean = instruments != null && channel != null
+  private def isReady: Boolean = channel != null && (instruments != null || channelsInjected)
 
   def startNote(
       instrumentType: Int,
@@ -147,13 +156,15 @@ class MusicMaker {
     if (!isReady) return
     val instrument = 8 * instrumentType + instrumentSubType
 
-    synthesizer.loadInstrument(instruments.getInstrument(instrument))
+    if (synthesizer != null) {
+      synthesizer.loadInstrument(instruments.getInstrument(instrument))
+    }
     channel = midiChannels(channelIndex)
     channel.programChange(instrument)
   }
 
   def stopAllSounds(): Unit = {
     if (!isReady) return
-    channel.allNotesOff()
+    midiChannels.foreach(ch => if (ch != null) ch.allNotesOff())
   }
 }
