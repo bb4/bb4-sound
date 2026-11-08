@@ -143,11 +143,9 @@ private[midi] class MidiRecordFrame(synth: MidiSynth)
   private def handleSaveRequest(): Unit = {
     try {
       val fc = new JFileChooser(new File(System.getProperty("user.dir")))
-      fc.setFileFilter(new javax.swing.filechooser.FileFilter {
-        override def accept(f: File): Boolean = f.isDirectory
-        override def getDescription: String = "Save as .mid file."
-      })
-      if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) saveMidiFile(fc.getSelectedFile)
+      fc.setFileFilter(new MidFileFilter)
+      if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
+        saveMidiFile(MidiRecordFrame.withMidExtension(fc.getSelectedFile))
     } catch {
       case ex: SecurityException => ex.printStackTrace()
     }
@@ -173,6 +171,13 @@ private[midi] class MidiRecordFrame(synth: MidiSynth)
   }
 }
 
+/** File chooser filter that keeps directories and `.mid` files (case-insensitive). */
+private[midi] class MidFileFilter extends javax.swing.filechooser.FileFilter {
+  override def accept(f: File): Boolean =
+    f.isDirectory || f.getName.toLowerCase.endsWith(".mid")
+  override def getDescription: String = "Save as .mid file."
+}
+
 private[midi] object MidiRecordFrame {
 
   /** Open the sequencer, load `sequence`, and rewind so Play always starts from the beginning. */
@@ -181,4 +186,9 @@ private[midi] object MidiRecordFrame {
     sequencer.setSequence(sequence)
     sequencer.setTickPosition(0)
   }
+
+  /** Append `.mid` once when the chosen name does not already have that extension. */
+  private[midi] def withMidExtension(file: File): File =
+    if (file.getName.toLowerCase.endsWith(".mid")) file
+    else new File(file.getParentFile, file.getName + ".mid")
 }
