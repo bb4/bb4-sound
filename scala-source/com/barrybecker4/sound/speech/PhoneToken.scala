@@ -15,6 +15,8 @@ object PhoneToken {
   private[speech] val COMMA_PAUSE = 200
   private[speech] val PERIOD_PAUSE = 680
   val MAX_MERGE_COUNT: Int = 1000
+  /** Converted allophones are 16-bit big-endian mono PCM. `MAX_MERGE_COUNT` is a whole number of these frames. */
+  private val PcmFrameBytes = 2
   private[speech] val DELAY_BETWEEN_WORDS = 200
 
   /**
@@ -42,18 +44,35 @@ object PhoneToken {
     else 0
 
   def mergeAllophonesInPlace(previousSound: Array[Byte], thisSound: Array[Byte], mergeCount: Int): Unit = {
-    var i = 0
-    while (i < mergeCount) {
-      previousSound(previousSound.length - mergeCount + i) =
-        ((previousSound(previousSound.length - mergeCount + i) + thisSound(i)) / 2).toByte
-      i += 1
+    val aligned = frameAligned(mergeCount)
+    var offset = 0
+    while (offset < aligned) {
+      val prevIndex = previousSound.length - aligned + offset
+      val averaged = (readBigEndianSample(previousSound, prevIndex) + readBigEndianSample(thisSound, offset)) / 2
+      writeBigEndianSample(previousSound, prevIndex, averaged)
+      offset += PcmFrameBytes
     }
   }
 
   def truncateAfterMerge(thisSound: Array[Byte], mergeCount: Int): Array[Byte] = {
-    val newSound = new Array[Byte](thisSound.length - mergeCount)
-    System.arraycopy(thisSound, mergeCount, newSound, 0, newSound.length)
+    val aligned = frameAligned(mergeCount)
+    val newSound = new Array[Byte](thisSound.length - aligned)
+    System.arraycopy(thisSound, aligned, newSound, 0, newSound.length)
     newSound
+  }
+
+  /** Whole 16-bit frames inside `mergeCount`. A trailing odd byte is left out of the crossfade. */
+  private def frameAligned(mergeCount: Int): Int =
+    if (mergeCount <= 0) 0 else mergeCount - mergeCount % PcmFrameBytes
+
+  private def readBigEndianSample(data: Array[Byte], index: Int): Int = {
+    val unsigned = ((data(index) & 0xff) << 8) | (data(index + 1) & 0xff)
+    if (unsigned >= 0x8000) unsigned - 0x10000 else unsigned
+  }
+
+  private def writeBigEndianSample(data: Array[Byte], index: Int, sample: Int): Unit = {
+    data(index) = ((sample >> 8) & 0xff).toByte
+    data(index + 1) = (sample & 0xff).toByte
   }
 
   /**
