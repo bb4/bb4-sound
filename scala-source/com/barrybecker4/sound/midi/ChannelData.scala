@@ -10,7 +10,7 @@ private[midi] class ChannelData(val channel: MidiChannel, val num: Int) {
   var sustain = false
   var velocity = 64
   var pressure = 64
-  var bend = 64
+  var bend = 8192
   var reverb = 64
   var row = 0
   var col = 0
