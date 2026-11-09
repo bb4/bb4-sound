@@ -15,6 +15,11 @@ bb4 {
     mainClass.set('com.barrybecker4.sound.midi.MidiSynth')
 }
 
+// Gradle 9 + Scala: main classes land in both java/main and scala/main outputs; jar must dedupe.
+tasks.named('jar') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 // Keep resource-only tree on main classpath (allophones under source/)
 sourceSets {
     main {
