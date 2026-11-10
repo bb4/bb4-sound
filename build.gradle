@@ -37,7 +37,7 @@ tasks.withType(ScalaCompile).configureEach {
 }
 
 dependencies {
-    implementation 'com.barrybecker4:bb4-common:2.1-SNAPSHOT'
+    implementation 'com.barrybecker4:bb4-common:2.1'
 }
 
 test {
