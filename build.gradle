@@ -1,14 +1,14 @@
 // Copyright by Barry G. Becker, 2013 - 2026. Licensed under MIT License: http://www.opensource.org/licenses/MIT
 
 plugins {
-    id 'com.barrybecker4.bb4.scala-library' version '2.1'
-    id 'com.barrybecker4.bb4.publish' version '2.1'
-    id 'com.barrybecker4.bb4.application' version '2.1'
+    id 'com.barrybecker4.bb4.scala-library' version '3.0-SNAPSHOT'
+    id 'com.barrybecker4.bb4.publish' version '3.0-SNAPSHOT'
+    id 'com.barrybecker4.bb4.application' version '3.0-SNAPSHOT'
 }
 
 description = 'Sound and speech synthesis library'
 group = 'com.barrybecker4'
-version = '2.1'
+version = '3.0-SNAPSHOT'
 
 bb4 {
     archivesBaseName.set('bb4-sound')
