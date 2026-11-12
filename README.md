@@ -8,7 +8,7 @@ Note: Much of this code came from two sources (though extensive modifications ha
   2) [Java Speech Synthesizer](http://www.javaworld.com/javaworld/jw-08-2001/jw-0817-javatalk.html?page=1) by LOTONtech.
 
 ### How to Build
-Type 'gradlew build' at the root. This will build everything, but since its a library project there won't be much to see. If you want to open the source in Intellij, then first run 'gradlew idea'.
+Type `./gradlew build` at the root. This will build everything, but since its a library project there won't be much to see. Open the project in IntelliJ via Gradle import (File → Open on the repo root).
 
 When there is a new release, versioned artifacts will be published by Barry Becker to [Sonatype](https://oss.sonatype.org).
 
