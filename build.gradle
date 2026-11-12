@@ -32,10 +32,6 @@ sourceSets {
     }
 }
 
-tasks.withType(ScalaCompile).configureEach {
-    scalaCompileOptions.additionalParameters += ['-deprecation', '-Wunused:imports']
-}
-
 dependencies {
     implementation bb4Libs.common
 }
