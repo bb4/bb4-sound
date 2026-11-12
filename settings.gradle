@@ -1,13 +1,19 @@
 pluginManagement {
+    def sibling = new File(settings.settingsDir, '../bb4-gradle')
+    // Included builds must not include bb4-gradle again.
+    if (sibling.directory && gradle.parent == null) includeBuild(sibling.canonicalFile)
     repositories {
+        mavenLocal()
         gradlePluginPortal()
         mavenCentral()
         maven { url = 'https://central.sonatype.com/repository/maven-snapshots/' }
     }
+    plugins {
+        id 'com.barrybecker4.bb4.settings' version '3.0-SNAPSHOT'
+    }
 }
-
 plugins {
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+    id 'com.barrybecker4.bb4.settings'
 }
 
 rootProject.name = 'bb4-sound'
